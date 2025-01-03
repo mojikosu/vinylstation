@@ -1,4 +1,4 @@
-# Vinylstation
+# VinylStation
 Transform a Raspberry Pi (4, or 3+) into a webradio streaming engine (Icecast and HLS output) for vinyl records. Grabs metadata from Shazaam for played records
 
 This script leverages OpenSource projects Liquidsoap (https://github.com/savonet), songrec (https://github.com/marin-m/SongRec) and all of their related libraries.
