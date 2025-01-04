@@ -3,23 +3,29 @@
 # Get the username of the current user
 USERNAME=$(whoami)
 
-echo "Hello, $USERNAME! Let's get started with VinylStation Installation"
+echo -e "Hello,\e[1;32m $USERNAME\e[0m! Let's get started with \e[1;42m  VinylStation Installation  \e[0m"
 #========FFMpeg and fdkaac compilation works with 64bit Bullseye distrib============
+echo -e "\e[1;42mUpdate system and install prerequisites\e[0m"
 sudo apt-get update && sudo apt-get -y upgrade
 sudo apt-get -y install icecast2 nginx libnginx-mod-rtmp pulseaudio mercurial git darcs bubblewrap screen build-essential libvorbis-dev libmp3lame-dev libasound2-dev libgtk-3-dev libssl-dev libasound2-plugins
-#========Get rid of every Audio device except the USB interface=========
+echo -e "\e[1;42mUpdate system and install prerequisites\e[0m :\e[1;32m Success \e[0m"
+#========Get rid of every audio device except the USB interface=========
 sudo sed -i '/^dtparam=audio=on$/c\dtparam=audio=off' /boot/firmware/config.txt
 sudo sed -i '/^dtoverlay=vc4-kms-v3d$/c\#dtoverlay=vc4-kms-v3d' /boot/firmware/config.txt
 sudo sed -i '/^max_framebuffers=2$/c\#max_framebuffers=2' /boot/firmware/config.txt
+echo -e "\e[1;41mGet rid of every audio device except the USB interface\e[0m :\e[1;32m Success \e[0m"
 #===============Daemonise Pulseaudio and have it spawn automatically upon system start
 sudo sed -i '/^; daemonize = no$/c\daemonize = yes' /etc/pulse/daemon.conf
 sudo sed -i '/^; autospawn = yes$/c\autospawn = yes' /etc/pulse/client.conf
+echo -e "\e[1;42mDaemonise Pulseaudio and have it spawn automatically upon system start \e[0m :\e[1;32m Success \e[0m"
 #===============Get OPAM and prepare switch
+echo -e "\e[1;42mGet OPAM and prepare switch\e[0m"
 bash -c "sh <(curl -fsSL https://raw.githubusercontent.com/ocaml/opam/master/shell/install.sh)"
 opam init -y --bare --shell-setup --disable-sandboxing 
 opam switch create liquidsoap ocaml-base-compiler.4.14.2 -y
 eval "$(opam env --switch=liquidsoap)"
 #export IS_SNAPSHOT=false;
+echo -e "\e[1;42mGet OPAM and prepare switch \e[0m : \e[1;32mSuccess\e[0m"
 #===============Create and prepare relevant directories and permissions
 sudo mkdir /etc/liquidsoap;
 sudo mkdir /etc/liquidsoap/hls;
@@ -36,7 +42,7 @@ sudo chmod 777 /var/www/html/song.json
 sudo mkdir /var/www/html/hls
 sudo mkdir /var/www/html/hls/persist
 sudo chown $USER:$USER -R /var/www/html/hls
-
+echo -e "\e[1;42mCreate and prepare relevant directories and permissions \e[0m : \e[1;32mSuccess\e[0m"
 #================Configure icecast.xml and enable Iceacast service===============
 sudo tee /etc/icecast2/icecast.xml <<EOF
 <icecast>
@@ -285,6 +291,8 @@ sudo tee /etc/icecast2/icecast.xml <<EOF
 </icecast>
 EOF
 sudo systemctl enable icecast2
+echo -e "\e[1;42mConfigure Icecast and enable service \e[0m : \e[1;32mSuccess\e[0m"
+
 
 #================ Create LIQUIDSOAP Streaming Engine configuration with HLS output ===========
 sudo tee /etc/liquidsoap/vinylfromWax.liq <<EOF
@@ -574,7 +582,7 @@ s)
 ================================>#
 EOF
 sudo sed -i "s/\$USER/$USER/g" /etc/liquidsoap/vinylfromWax.liq
-
+echo -e "\e[1;42mCreate LIQUIDSOAP Streaming Engine configuration with HLS output\e[0m : \e[1;32mSuccess\e[0m"
 #================Congifure sound interface for liquidsoap=================
 
 sudo tee /etc/asound.conf <<EOF
@@ -616,9 +624,9 @@ pcm.!default {
 #   }
 #}
 EOF
+echo -e "\e[1;42mCreate ALSA configuration file, PulseAudio version - see notes inside /etc/asound.conf \e[0m : \e[1;32mSuccess\e[0m"
 
-
-#========================= configure liquidsoap.service
+#========================= Configure liquidsoap.service
 
 sudo tee /lib/systemd/system/liquidsoap.service <<EOF
 
@@ -637,6 +645,7 @@ WantedBy=multi-user.target
 EOF
 
 sudo sed -i "s/\$USER/$USER/g" /lib/systemd/system/liquidsoap.service
+echo -e "\e[1;42mConfigure liquidsoap.service\e[0m : \e[1;32mSuccess\e[0m"
 #=================================Configure NGINX with HLS streamer
 sudo tee /etc/nginx/sites-available/HLS-vinylstation.conf <<EOF
 
@@ -684,13 +693,16 @@ server {
 
 
 EOF
-sudo ln -s /etc/nginx/sites-enabled/ /etc/sites-available/HLS-vinylstation.conf
+#sudo ln -s /etc/nginx/sites-enabled/ /etc/sites-available/HLS-vinylstation.conf
+echo -e "\e[1;42mConfigure NGINX with HLS streamer\e[0m : \e[1;31mNOT ACTIVATED\e[0m \n\e[1;43mThe configuration file is ready, but is not enabled, as liquidsoap harbor serves the files.\e[0m\nIf you want to activate the NGINX HLS server configuration:\n1. In the liquidsoap configuration file: \e[1;31m disable liquidsoap output.harbor.hls,\e[1;32m activate output.file.hls\e[0m \n2. run this command: \e[1;33mln -s /etc/nginx/sites-enabled/ /etc/sites-available/HLS-vinylstation.conf\e[0m"
 
 #=======================Get FFMPEG Source & Compile====================
+echo -e "\e[1;42mPrepare the long and winding road to compiling FFmpeg with aac support\e[0m"
 sudo apt-get -y install autoconf automake build-essential cmake doxygen libtool pkg-config python3-dev python3-pip git
 cd ~
 mkdir ~/ffmpeg-libraries
 #----------Compile AAC Support
+echo -e "\e[1;42mGet FFmpeg fdk-aac libraries\e[0m"
 git clone --depth 1 https://github.com/mstorsjo/fdk-aac.git ~/ffmpeg-libraries/fdk-aac \
   && cd ~/ffmpeg-libraries/fdk-aac \
   && autoreconf -fiv \
@@ -698,14 +710,17 @@ git clone --depth 1 https://github.com/mstorsjo/fdk-aac.git ~/ffmpeg-libraries/f
   && make -j$(nproc) \
   && sudo make install ;
 cd ~ ;
+echo -e "\e[1;42mGet FFmpeg source (v.7.1)\e[0m"
 wget https://ffmpeg.org/releases/ffmpeg-7.1.tar.xz;
 tar -xf ffmpeg-7.1.tar.xz ;
 cd ffmpeg-7.1 ;
+echo -e "\e[1;42mCompile FFmpeg with fdk-aac libvorbis libmp3lame flac\e[0m"
 ./configure --enable-shared  --enable-libfdk-aac --enable-libvorbis --enable-libmp3lame --enable-pic \
 && make && sudo make install && sudo ldconfig
-
+echo -e "\e[1;42mCompile FFmpeg with fdk-aac libvorbis libmp3lame flac\e[0m : \e[1;32mSuccess\e[0m"
 
 #=======================Get SONGREC Source & compile===================
+echo -e "\e[1;42mGet songrec opensource Shazam client and compile\e[0m"
 sudo apt-get update && sudo apt-get -y upgrade
 sudo apt-get -y install mercurial git darcs bubblewrap
 curl https://sh.rustup.rs -sSf | sh
@@ -720,10 +735,14 @@ git clone https://github.com/marin-m/songrec
 cd songrec
 cargo build --release --no-default-features -F ffmpeg,mpris
 sudo mv ~/songrec/target/release/songrec /usr/sbin/
-cd ~
+echo -e "\e[1;42mGet songrec opensource Shazam client and compile\e[0m : \e[1;32mSuccess\e[0m"
 
+#=======================Get liquidsoap rolling release source & compile===================
+echo -e "\e[1;42mGet liquidsoap rolling release source & compile\e[0m"
+cd ~
 opam pin -ny git+https://github.com/savonet/liquidsoap
 
-opam install  -y ocurl taglib mad lame vorbis cry alsa pulseaudio shine flac ffmpeg liquidsoap
+opam install -y ocurl taglib mad lame vorbis cry alsa pulseaudio shine flac ffmpeg liquidsoap
 sudo systemctl enable liquidsoap.service
+echo -e "\e[1;42mGet liquidsoap rolling release source & compile : \e[1;32mSuccess\e[0m"
 sudo reboot
