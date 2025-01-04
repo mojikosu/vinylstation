@@ -1,15 +1,27 @@
 #!/bin/bash
+#================ Function to check the status of the last executed command
+check_status() {
+    if [ $? -ne 0 ]; then
+        echo -e "\e[1;41mError: $1\e[0m"
+        exit 1
+    fi
+}
+
 #=============Preliminaries & Initialise OPAM and build bare switch (=compiler)=======
 # Get the username of the current user
 echo -e "Hello,\e[1;32m $USER\e[0m! Let's get started with \e[1;42m  VinylStation Installation  \e[0m"
 #========FFMpeg and fdkaac compilation works with 64bit Bullseye distrib============
 echo -e "\e[1;42mUpdate system and install prerequisites\e[0m"
 sudo apt-get update && sudo apt-get -y upgrade
+check_status "System update and upgrade failed."
 sudo apt-get -y install icecast2 nginx libnginx-mod-rtmp pulseaudio mercurial git darcs bubblewrap screen build-essential libvorbis-dev libmp3lame-dev libasound2-dev libgtk-3-dev libssl-dev libasound2-plugins
+check_status "Install prerequisites failed."
 echo -e "\e[1;42mUpdate system and install prerequisites\e[0m :\e[1;32m Success \e[0m"
 #========Get rid of every audio device except the USB interface=========
 sudo sed -i '/^dtparam=audio=on$/c\dtparam=audio=off' /boot/firmware/config.txt
+check_status "Disable internal audio devices failed."
 sudo sed -i '/^dtoverlay=vc4-kms-v3d$/c\#dtoverlay=vc4-kms-v3d' /boot/firmware/config.txt
+check_status "Disable internal audio devices failed."
 sudo sed -i '/^max_framebuffers=2$/c\#max_framebuffers=2' /boot/firmware/config.txt
 echo -e "\e[1;41mGet rid of every audio device except the USB interface\e[0m :\e[1;32m Success \e[0m"
 #===============Daemonise Pulseaudio and have it spawn automatically upon system start
@@ -19,8 +31,10 @@ echo -e "\e[1;42mDaemonise Pulseaudio and have it spawn automatically upon syste
 #===============Get OPAM and prepare switch
 echo -e "\e[1;42mGet OPAM and prepare switch\e[0m"
 bash -c "sh <(curl -fsSL https://raw.githubusercontent.com/ocaml/opam/master/shell/install.sh)"
+check_status "Install OPAM failed."
 opam init -y --bare --shell-setup --disable-sandboxing 
 opam switch create liquidsoap ocaml-base-compiler.4.14.2 -y
+check_status "Create OPAM switch failed."
 eval "$(opam env --switch=liquidsoap)"
 #export IS_SNAPSHOT=false;
 echo -e "\e[1;42mGet OPAM and prepare switch \e[0m : \e[1;32mSuccess\e[0m"
@@ -739,11 +753,14 @@ echo -e "\e[1;42mGet songrec opensource Shazam client and compile\e[0m : \e[1;32
 echo -e "\e[1;42mGet liquidsoap rolling release source & compile\e[0m"
 cd ~
 opam pin -ny git+https://github.com/savonet/liquidsoap
-
+check_status "Pin Liquidsoap repository failed."
+o
 #Line below generates some package conflicts in recent versions
 #opam install -y ocurl taglib mad lame vorbis cry alsa pulseaudio shine flac ffmpeg liquidsoap
 #Following line prefers FFmpeg for lame, vorbis
 opam install -y ocurl taglib mad lame cry alsa pulseaudio shine ffmpeg liquidsoap
+check_status "Install Liquidsoap and dependencies failed."
+
 sudo systemctl enable liquidsoap.service
 echo -e "\e[1;42mGet liquidsoap rolling release source & compile : \e[1;32mSuccess\e[0m"
 echo -e "\e[1;42mVinylstation successfully installed\e[0m\n
@@ -772,4 +789,10 @@ echo -e "\e[1;42mVinylstation successfully installed\e[0m\n
 ░░░░▒▓▓██▓▓█░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▒▓▓▓███▓▒░░░
 ░░░░▓██████▒░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▓██████▒░░░
 "
+# 10-second countdown before reboot
+for i in {10..1}; do
+    echo -e "\e[1;31m System reboot in $i \e[0m seconds."
+    sleep 1
+done
+# Reboot the system to apply all configurations
 sudo reboot
