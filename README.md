@@ -37,9 +37,10 @@ Upon unwrapping my late dad's vintage HiFi setup he got just before my birth, I 
 6. Enable auto-start of liquidsoap services which hosts Icecast and HLS output
 
 ## Roadmap:
-A) Continuous bugfixes
-B) Implement nginx webserver to provide metadata on music playing
+A) Continuous bugfixes.\
+B) Implement nginx webserver to provide metadata on music playing.\
 C) Create history and statistics on music played.
 
 ## Installation:
-Log into your Raspberry Pi and run : `bash <(curl -fsSL https://raw.githubusercontent.com/mojikosu/vinylstation/refs/heads/main/installVinylstation.sh)`
+Log into your Raspberry Pi and run :
+```bash <(curl -fsSL https://raw.githubusercontent.com/mojikosu/vinylstation/refs/heads/main/installVinylstation.sh)```
