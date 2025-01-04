@@ -8,7 +8,7 @@ Endless thanks go to the developers of these projects.
 This project is an amateur / hobbyist effort. Under no circumstances does it claim to be ready for use in a production environment. It serves educational and geeky purposes.
 
 **Project philosphy**
-Upon unwrapping my late dad's vintage HiFi setup he got just before my birth, I got hooked (again) to listening to vinyl records. However, as I built a smart home over the past years, I was wondering whether it would be possible to stream the vinyl records onto the SONOS devices in the house's rooms. Of course, the stream, stemming from an analogue source should embed the appropriate metadata. And so, the challenge was set.
+Upon unwrapping my late dad's vintage HiFi setup he got just before my birth, I got hooked (again) on listening to vinyl records. However, as I built a smart home over the past years, I was wondering whether it would be possible to stream the vinyl records onto the SONOS devices in the house's rooms. Of course, the stream, stemming from an analogue source should embed the appropriate metadata. And so, the challenge was set.
 
 **What project Vinylstation achieves**
 - Capture analogue audio over a USB interface (phono preamp in this case)
