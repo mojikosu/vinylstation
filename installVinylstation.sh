@@ -742,7 +742,10 @@ echo -e "\e[1;42mGet liquidsoap rolling release source & compile\e[0m"
 cd ~
 opam pin -ny git+https://github.com/savonet/liquidsoap
 
-opam install -y ocurl taglib mad lame vorbis cry alsa pulseaudio shine flac ffmpeg liquidsoap
+#Line below generates some package conflicts in recent versions
+#opam install -y ocurl taglib mad lame vorbis cry alsa pulseaudio shine flac ffmpeg liquidsoap
+This line works
+opam install -y ocurl taglib mad lame cry alsa pulseaudio shine ffmpeg liquidsoap
 sudo systemctl enable liquidsoap.service
 echo -e "\e[1;42mGet liquidsoap rolling release source & compile : \e[1;32mSuccess\e[0m"
 echo -e "\e[1;42mVinylstation successfully installed\e[0m\n
