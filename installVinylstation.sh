@@ -1,9 +1,7 @@
 #!/bin/bash
 #=============Preliminaries & Initialise OPAM and build bare switch (=compiler)=======
 # Get the username of the current user
-USERNAME=$(whoami)
-
-echo -e "Hello,\e[1;32m $USERNAME\e[0m! Let's get started with \e[1;42m  VinylStation Installation  \e[0m"
+echo -e "Hello,\e[1;32m $USER\e[0m! Let's get started with \e[1;42m  VinylStation Installation  \e[0m"
 #========FFMpeg and fdkaac compilation works with 64bit Bullseye distrib============
 echo -e "\e[1;42mUpdate system and install prerequisites\e[0m"
 sudo apt-get update && sudo apt-get -y upgrade
@@ -744,7 +742,7 @@ opam pin -ny git+https://github.com/savonet/liquidsoap
 
 #Line below generates some package conflicts in recent versions
 #opam install -y ocurl taglib mad lame vorbis cry alsa pulseaudio shine flac ffmpeg liquidsoap
-This line works
+#Following line prefers FFmpeg for lame, vorbis
 opam install -y ocurl taglib mad lame cry alsa pulseaudio shine ffmpeg liquidsoap
 sudo systemctl enable liquidsoap.service
 echo -e "\e[1;42mGet liquidsoap rolling release source & compile : \e[1;32mSuccess\e[0m"
