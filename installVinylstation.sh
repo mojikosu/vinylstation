@@ -390,13 +390,12 @@ print("Year: #{year}")
   #  print("Found track #{title}, artist is #{subtitle}, cover art url is #{coverart}")
 	pict = process.read("curl #{coverart} | base64 -i")
 
-#No Touchy, this is the correct format, displays cover art inside ogg stream the extra_tag info only needs to be put into the final HLS output!
-  current_coverart := 'artworkURL_400x\x00'^coverart #his formatting works!
-  #current_coverart := '<artworkURL_400x␀'^coverart^'>'
-  #current_coverart := 'artworkURL_400x\u{0000}'^coverart
-  #current_coverart = 'artworkURL_400x\x00http://192.168.39.19/template.jpg'
-  #Line Below with original config, working
-  #s.insert_metadata([("title", title),("artist", subtitle),("coverart", coverart),("WXXX",current_coverart())]) 
+#Here are different options to prepare the URL coverart string for SONOS coverart injection. SONOS requires two string parts separated by a NUL character.
+#See https://docs.sonos.com/docs/supported-audio-formats#tag/playback/operation/Playback-LoadContent-GroupId for information. Beware the typos in their WXXX tag example: neither include <> nor "" within the string!
+  current_coverart := 'artworkURL_400x\x00'^coverart #This Hex format NUL character formatting works!
+  #current_coverart := '<artworkURL_400x␀'^coverart^'>' #NUL CHaracter
+  #current_coverart := 'artworkURL_400x\u{0000}'^coverart #UNICODE NUL CHaracter
+  
   s.insert_metadata([("title", title),("artist", subtitle),("pic", pict),("coverart", coverart),("album", album),("year", year),("genre", genre),("url",current_coverart())]) 
   #print("HLS Current_Coverart tag reads #{current_coverart()}")
 end
@@ -417,8 +416,6 @@ s = blank.detect(
   {silent := true},
   s)
 
-
-
 #==============CREATE HTTP SERVER FOR METADATA OUTPUT================
 meta = ref([])
 
@@ -433,31 +430,31 @@ end
 harbor.http.register(port=7000,method="GET","/getmeta",get_meta)
 
 #===========PREPARE HLS SETTINGS=================
-#aac_lofi = %ffmpeg(
-#    format="adts",
-#    %audio(
-#        codec="aac",
-#        samplerate=44100,
-#        channels=2,
- #       b="96k")).{
- #       # Adds an extra tag to this stream.
- #      id3_version=4,
- #      replay_id3=true,
- #      extra_tags = ["WXXX"]
-  #  }
-#aac_midfi = %ffmpeg(
-#    format="adts",
-#    %audio(
-#        codec="aac",
-#       samplerate=44100,
-#        channels=2,
-#        b="128k",
-#        )
-#).{
+aac_lofi = %ffmpeg(
+    format="adts",
+    %audio(
+        codec="aac",
+        samplerate=44100,
+        channels=2,
+       b="96k")).{
         # Adds an extra tag to this stream.
-#       id3_version=4,
-#       replay_id3=true,
-#       extra_tags = ["WXXX"]}
+       id3_version=4,
+       replay_id3=true,
+    }
+    
+aac_midfi = %ffmpeg(
+    format="adts",
+    %audio(
+        codec="aac",
+       samplerate=44100,
+        channels=2,
+        b="128k",
+        )
+).{
+        # Adds an extra tag to this stream.
+       id3_version=4,
+       replay_id3=true,
+}
        
 aac_hifi = %ffmpeg(
     format="adts", #metadata successfully sent with adts
@@ -478,8 +475,8 @@ aac_hifi = %ffmpeg(
 
 # Put them all together 
 hls_streams = [
-		#("aac_lofi", aac_lofi), 
-		#("aac_midfi", aac_midfi), 
+		("aac_lofi", aac_lofi), 
+		("aac_midfi", aac_midfi), 
 		("aac_hifi", aac_hifi)]
 
 def hls_segment_name(metadata) =
@@ -491,7 +488,7 @@ end
 
 #=================OUTPUT==================
 
-#-------------HLS Output via harbor - not recommended-------------
+#-------------HLS Output via harbor - not recommended by savonet, but works here without issues-------------
 output.harbor.hls(playlist="vinylstation.m3u8",
     segment_duration=0.5,
     segments=6,
@@ -500,7 +497,6 @@ output.harbor.hls(playlist="vinylstation.m3u8",
     port=8080,
     persist_at="/etc/liquidsoap/hls/persist",
     #"/etc/liquidsoap/hls",
-    #extra_tags = ["WXXX", "album", "genre", "year"], #setting worked with "WXXX" tag
     hls_streams,
     s)
 #<
@@ -513,12 +509,12 @@ output.file.hls(playlist="vinylstation.m3u8",
     #port=8080,
     persist_at="/var/www/html/hls/persist",
     "/var/www/html/hls",
-    #extra_tags = ["WXXX", "album", "genre", "year"], #setting worked with "WXXX" tag
     hls_streams,
     s)
 >#
 
 #---------------Icecast Output-------------------
+#---------------------MP3------------------------
 output.icecast(f, 
 host = "127.0.0.1", 
 port = 8000, 
@@ -528,10 +524,10 @@ name = "Vinyl from Wax",
 id="Vinyl Station", 
 on_start=handleblank,
 send_icy_metadata=true,
-description="Vinyl from Wax in Petange, Luxembourg - powered by Technics turntables",
+description="VinylStation - powered by Technics turntables",
 #url="http://IP-ADDRESS&#8221;,
 s)
-
+#-----------------OGG/Vorbis--------------------
 output.icecast(fvorbis,
 host = "127.0.0.1",
 port = 8000,
@@ -540,12 +536,10 @@ mount = "vinylogg",
 name = "Vinyl from Wax",
 id="Vinyl Station",
 #send_icy_metadata=true,
-description="Vinyl from Wax in Petange, Luxembourg - powered by Technics turntables",
+description="VinylStation - powered by Technics turntables",
 s) 
 
-
-
-#<========== Output removed ============
+#<========== Disabled Outputs ============
 output.icecast(fvorbis,
 host = "127.0.0.1",
 port = 8000,
@@ -554,7 +548,7 @@ mount = "vinylogg.ogg",
 name = "Vinyl from Wax",
 id="Vinyl Station",
 #send_icy_metadata=true,
-description="Vinyl from Wax in Petange, Luxembourg - powered by Technics turntables",
+description="VinylStation - powered by Technics turntables",
 s) 
 
 output.icecast(fflac,
@@ -564,9 +558,8 @@ password = "vinylstation",
 mount = "vinylflac",
 name = "Vinyl from Wax",
 id="Vinyl Station",
-description="Vinyl from Wax in Petange, Luxembourg - powered by Technics turntables",
+description="VinylStation - powered by Technics turntables",
 s) 
-
 
 output.icecast(faac,
 host = "127.0.0.1",
@@ -576,16 +569,17 @@ mount = "vinylaac",
 name = "Vinyl from Wax",
 id="Vinyl Station",
 #send_icy_metadata=true,
-description="Vinyl from Wax in Petange, Luxembourg - powered by Technics turntables",
+description="VinylStation - powered by Technics turntables",
 s)
 ================================>#
-
 EOF
+sudo sed -i "s/\$USER/$USER/g" /etc/liquidsoap/vinylfromWax.liq
 
-#================congifure soundcard for liquidsoap=================
+#================Congifure sound interface for liquidsoap=================
 
 sudo tee /etc/asound.conf <<EOF
 #goes into /etc/
+#This config is for use with PulseAudio
 pcm.!default {
     type hw
     card 0
@@ -597,7 +591,7 @@ pcm.!default {
     buffer_size 4096
 }
 
-
+#What you see here below are configs that worked well with ALSA
 #pcm.!default {
 #    type plug
 #    slave.pcm "liquidsoap"
@@ -642,7 +636,7 @@ User=$USER
 WantedBy=multi-user.target
 EOF
 
-
+sudo sed -i "s/\$USER/$USER/g" /lib/systemd/system/liquidsoap.service
 #=================================Configure NGINX with HLS streamer
 sudo tee /etc/nginx/sites-available/HLS-vinylstation.conf <<EOF
 
