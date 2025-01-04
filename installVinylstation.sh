@@ -75,13 +75,13 @@ sudo tee /etc/icecast2/icecast.xml <<EOF
 
     <authentication>
         <!-- Sources log in with username 'source' -->
-        <source-password>WaxVinyl</source-password>
+        <source-password>vinylstation</source-password>
         <!-- Relays log in with username 'relay' -->
-        <relay-password>WaxVinyl</relay-password>
+        <relay-password>VinylStation</relay-password>
 
         <!-- Admin logs in with the username given below -->
         <admin-user>admin</admin-user>
-        <admin-password>billabong</admin-password>
+        <admin-password>VinylStation</admin-password>
     </authentication>
 
     <!-- set the mountpoint for a shoutcast source to use, the default if not
@@ -522,7 +522,7 @@ output.file.hls(playlist="vinylstation.m3u8",
 output.icecast(f, 
 host = "127.0.0.1", 
 port = 8000, 
-password = "WaxVinyl", 
+password = "vinylstation", 
 mount = "vinyl", 
 name = "Vinyl from Wax",
 id="Vinyl Station", 
@@ -535,7 +535,7 @@ s)
 output.icecast(fvorbis,
 host = "127.0.0.1",
 port = 8000,
-password = "WaxVinyl",
+password = "vinylstation",
 mount = "vinylogg",
 name = "Vinyl from Wax",
 id="Vinyl Station",
@@ -549,7 +549,7 @@ s)
 output.icecast(fvorbis,
 host = "127.0.0.1",
 port = 8000,
-password = "WaxVinyl",
+password = "vinylstation",
 mount = "vinylogg.ogg",
 name = "Vinyl from Wax",
 id="Vinyl Station",
@@ -560,7 +560,7 @@ s)
 output.icecast(fflac,
 host = "127.0.0.1",
 port = 8000,
-password = "WaxVinyl",
+password = "vinylstation",
 mount = "vinylflac",
 name = "Vinyl from Wax",
 id="Vinyl Station",
@@ -571,7 +571,7 @@ s)
 output.icecast(faac,
 host = "127.0.0.1",
 port = 8000,
-password = "WaxVinyl",
+password = "vinylstation",
 mount = "vinylaac",
 name = "Vinyl from Wax",
 id="Vinyl Station",
