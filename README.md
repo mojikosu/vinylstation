@@ -1,5 +1,5 @@
 # VinylStation
-Transform a Raspberry Pi (4, or 3+) into a webradio streaming engine (Icecast and HLS output) for vinyl records. Grabs metadata from Shazaam for played records
+Transform a Raspberry Pi (4, or 3+) into a webradio streaming engine (Icecast and HLS output) for vinyl records. Grabs metadata from Shazaam for played records.
 
 This script leverages OpenSource projects Liquidsoap (https://github.com/savonet), songrec (https://github.com/marin-m/SongRec) and all of their related libraries.
 Endless thanks go to the developers of these projects.
@@ -10,7 +10,7 @@ This project is an amateur / hobbyist effort. Under no circumstances does it cla
 ## Project philosphy
 Upon unwrapping my late dad's vintage HiFi setup he got just before my birth, I got hooked (again) on listening to vinyl records. However, as I built a smart home over the past years, I was wondering whether it would be possible to stream the vinyl records onto the SONOS devices in the house's rooms. Of course, the stream, stemming from an analogue source should embed the appropriate metadata. And so, the challenge was set.
 
-## What project Vinylstation achieves
+## What project VinylStation achieves
 - Capture analogue audio over a USB interface (phono preamp in this case)
 - Fingerprint the audio using songrec which, in turn, is an opensource client for Shazam
 - Embed the gathered metadata into the audio stream
@@ -42,5 +42,5 @@ B) Implement nginx webserver to provide metadata on music playing.\
 C) Create history and statistics on music played.
 
 ## Installation:
-Log into your Raspberry Pi and run :
+Log into your Raspberry Pi and run :\
 ```bash <(curl -fsSL https://raw.githubusercontent.com/mojikosu/vinylstation/refs/heads/main/installVinylstation.sh)```
