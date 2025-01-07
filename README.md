@@ -18,8 +18,8 @@ Upon unwrapping my late dad's vintage HiFi setup he got just before my birth, I 
 - Output the digitised stream over HLS
   
 ## Requirements:
-- Raspberry Pi 4 or 3b+ with internet access
-- Recent Raspbian OS (≥ Bookworm)
+- Raspberry Pi 4 or 3b+ with internet access (WARNING: My test have shown that a **Raspi 3b**+ is capable at most of outputting **one** HLS stream alongside audio fingerprinting. If you should choose to output multiple audio streams, expect considerable dropouts! Please adapt the configuration files accordingly.) 
+- Recent Raspbian OS Lite (≥ Bookworm, ≥ 32-bit)
 - Micro SD card (8Gb is enough)
 - A USB (Phono Preamp) sound interface **Note**: In fact, you can hook up any analog audio source, as the underlying software is source media agnostic. Successfully tested have been: https://www.behringer.com/product.html?modelCode=0805-AAF and https://artproaudio.com/phonopreamps/product/357989/usbphonoplusprojectseries 
 
