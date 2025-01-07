@@ -55,5 +55,5 @@ It looks like this:
 
 ## Home Assistant
 I use Home Assistant (https://www.home-assistant.io) with the SONOS devices to tap into the metadata and coverart to set the mood lighting in the living room dynamically using ad-media-lights-sync (https://github.com/ericmatte/ad-media-lights-sync/releases/tag/v0.6.0) running under Home Assistant's AppDaemon Add-on. It's a lot of fun, see here. 
-(Thank you for asking, yes, the disco ball is illuminated, based on the genre of the track being played ;) )\
+(Yes, the disco ball is illuminated, based on the genre of the track played. Thank you for asking. ;) )\
 ![Mood Lighting](m-lighting-based-on-coverart.jpeg)
