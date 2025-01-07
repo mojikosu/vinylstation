@@ -50,7 +50,8 @@ Selected metadata is available in JSON format under ```http://your VinylStation 
 
 ## SONOS integration:
 If you tap into the HLS output available under ```http;//your VinylStation IP here:8080/vinylstation.m3u8``` on your SONOS system, metadata including coverart are displayed within the SONOS app. The metadata are gathered from Shazam via songrec.
-It looks like this:\ ![Metadata within SONOS](sonos-metadata-example.jpeg?raw=true "Title")
+It looks like this:
+![Metadata within SONOS](sonos-metadata-example.jpeg?raw=true "Title")
 
 ## Home Assistant
 I use Home Assistant (https://www.home-assistant.io) with the SONOS devices to tap into the metadata and coverart to set the mood lighting in the living room dynamically using ad-media-lights-sync (https://github.com/ericmatte/ad-media-lights-sync/releases/tag/v0.6.0) running under Home Assistant's AppDaemon Add-on. It's a lot of fun, see here. 
