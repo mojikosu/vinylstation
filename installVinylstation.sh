@@ -704,7 +704,7 @@ server {
 
 
 EOF
-sudo ln -s /etc/nginx/sites-enabled/ /etc/sites-available/HLS-vinylstation.conf
+sudo ln -s /etc/nginx/sites-available/HLS-vinylstation.conf /etc/nginx/sites-enabled
 #echo -e "\e[1;42mConfigure NGINX with HLS streamer\e[0m : \e[1;31mNOT ACTIVATED\e[0m \n\e[1;43mThe configuration file is ready, but is not enabled, as liquidsoap harbor serves the files.\e[0m\nIf you want to activate the NGINX HLS server configuration:\n1. In the liquidsoap configuration file: \e[1;31m disable liquidsoap output.harbor.hls,\e[1;32m activate output.file.hls\e[0m \n2. run this command: \e[1;33mln -s /etc/nginx/sites-enabled/ /etc/sites-available/HLS-vinylstation.conf\e[0m"
 
 #=======================Get FFMPEG Source & Compile====================
