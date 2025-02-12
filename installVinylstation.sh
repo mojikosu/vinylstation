@@ -507,8 +507,8 @@ end
 
 
 #=================OUTPUT==================
-
-#-------------HLS Output via harbor - not recommended by savonet, but works here without issues-------------
+#<
+#-------------HLS Output via harbor - not recommended by savonet -------------
 output.harbor.hls(playlist="vinylstation.m3u8",
     segment_duration=0.5,
     segments=6,
@@ -519,7 +519,7 @@ output.harbor.hls(playlist="vinylstation.m3u8",
     #"/etc/liquidsoap/hls",
     hls_streams,
     s)
-#<
+>#
 #-------------HLS Output via file-------------
 output.file.hls(playlist="vinylstation.m3u8",
     segment_duration=2.0,
@@ -531,7 +531,7 @@ output.file.hls(playlist="vinylstation.m3u8",
     "/var/www/html/hls",
     hls_streams,
     s)
->#
+
 
 #---------------Icecast Output-------------------
 #---------------------MP3------------------------
