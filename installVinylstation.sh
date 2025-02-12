@@ -336,7 +336,7 @@ f = %ffmpeg(format="mp3", %audio(codec="libmp3lame", samplerate=44100, sample_fo
 #f = %shine(channels=2,samplerate=44100,bitrate=320)
 #-----------------OGG VORBIS stream
 #fvorbis = %ogg(%vorbis.cbr(samplerate=44100, channels=2, bitrate=128))
-fvorbis = %ffmpeg(format="ogg", %audio(codec="libvorbis", samplerate=44100, sample_format="s16", channels=2, b="250k"))
+#fvorbis = %ffmpeg(format="ogg", %audio(codec="libvorbis", samplerate=44100, sample_format="s16", channels=2, b="250k"))
 #-----------------ACC stream for SONOS
 #faac = %fdkaac(channels=2, samplerate=44100, bandwidth="auto", bitrate=96, afterburner=false, transmux="adts", sbr_mode=false)
 #faac = %ffmpeg(format="adts", %audio(codec="libfdk-aac", samplerate=44100, sample_format="s16", channels=2, b="250k"))
@@ -401,13 +401,12 @@ metadata_list =
 let album = metadata_list["Album"]
 #let label = metadata_list["Label"]    
 let year = metadata_list["Released"]    
-    
-print ("Genre: #{genre}")
-print("Album: #{album}")
+#=========Debug lines, not needed for actual script===========    
+#print ("Genre: #{genre}")
+#print("Album: #{album}")
 #print("Label: #{label}")
-print("Year: #{year}")   
-
-  #  print("Found track #{title}, artist is #{subtitle}, cover art url is #{coverart}")
+#print("Year: #{year}")   
+#print("Found track #{title}, artist is #{subtitle}, cover art url is #{coverart}")
 	pict = process.read("curl #{coverart} | base64 -i")
 
 #Here are different options to prepare the URL coverart string for SONOS coverart injection. SONOS requires two string parts separated by a NUL character.
@@ -547,6 +546,7 @@ send_icy_metadata=true,
 description="VinylStation - powered by Technics turntables",
 #url="http://IP-ADDRESS&#8221;,
 s)
+#<========== Disabled Outputs ============
 #-----------------OGG/Vorbis--------------------
 output.icecast(fvorbis,
 host = "127.0.0.1",
@@ -559,7 +559,6 @@ id="Vinyl Station",
 description="VinylStation - powered by Technics turntables",
 s) 
 
-#<========== Disabled Outputs ============
 output.icecast(fvorbis,
 host = "127.0.0.1",
 port = 8000,
@@ -705,8 +704,8 @@ server {
 
 
 EOF
-#sudo ln -s /etc/nginx/sites-enabled/ /etc/sites-available/HLS-vinylstation.conf
-echo -e "\e[1;42mConfigure NGINX with HLS streamer\e[0m : \e[1;31mNOT ACTIVATED\e[0m \n\e[1;43mThe configuration file is ready, but is not enabled, as liquidsoap harbor serves the files.\e[0m\nIf you want to activate the NGINX HLS server configuration:\n1. In the liquidsoap configuration file: \e[1;31m disable liquidsoap output.harbor.hls,\e[1;32m activate output.file.hls\e[0m \n2. run this command: \e[1;33mln -s /etc/nginx/sites-enabled/ /etc/sites-available/HLS-vinylstation.conf\e[0m"
+sudo ln -s /etc/nginx/sites-enabled/ /etc/sites-available/HLS-vinylstation.conf
+#echo -e "\e[1;42mConfigure NGINX with HLS streamer\e[0m : \e[1;31mNOT ACTIVATED\e[0m \n\e[1;43mThe configuration file is ready, but is not enabled, as liquidsoap harbor serves the files.\e[0m\nIf you want to activate the NGINX HLS server configuration:\n1. In the liquidsoap configuration file: \e[1;31m disable liquidsoap output.harbor.hls,\e[1;32m activate output.file.hls\e[0m \n2. run this command: \e[1;33mln -s /etc/nginx/sites-enabled/ /etc/sites-available/HLS-vinylstation.conf\e[0m"
 
 #=======================Get FFMPEG Source & Compile====================
 echo -e "\e[1;42mPrepare the long and winding road to compiling FFmpeg with aac support\e[0m"
