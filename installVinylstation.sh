@@ -753,7 +753,7 @@ echo -e "\e[1;42mGet liquidsoap rolling release source & compile\e[0m"
 cd ~
 opam pin -ny git+https://github.com/savonet/liquidsoap
 check_status "Pin Liquidsoap repository failed."
-o
+
 #Line below generates some package conflicts in recent versions
 #opam install -y ocurl taglib mad lame vorbis cry alsa pulseaudio shine flac ffmpeg liquidsoap
 #Following line prefers FFmpeg for lame, vorbis
