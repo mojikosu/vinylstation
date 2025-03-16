@@ -49,8 +49,8 @@ Log into your Raspberry Pi and run :\
 Selected metadata is available in JSON format under ```http://your VinylStation IP here:7000/getmeta```
 
 ## SONOS integration:
-If you tap into the HLS output available under ```http;//your VinylStation IP here:8080/vinylstation.m3u8``` on your SONOS system, metadata including coverart are displayed within the SONOS app. The metadata are gathered from Shazam via songrec.
-It looks like this:
+If you tap into the HLS output available under ```http;//your VinylStation IP here:8080/vinylstation.m3u8``` on your SONOS system, metadata including coverart are displayed within the SONOS app. The metadata are gathered from Shazam via songrec.\
+It looks like this:\
 ![Metadata within SONOS](sonos-metadata-example.jpeg?raw=true "Title")
 
 ## Home Assistant
