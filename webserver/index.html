@@ -1,1 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to Vinylstation</title>
+<style>
+html { color-scheme: light dark; }
+body { margin: 0 auto;
+font-family: Tahoma, Verdana, Arial, sans-serif; 
+            margin: 0;
+            padding: 0;
+            background-image: url('img/vinylstationbackground.jpg'); /* Replace with your image URL */
+            background-size: cover; /* Ensures the image covers the entire viewport */
+            background-position: center; /* Centers the image */
+            background-repeat: no-repeat; /* Prevents tiling of the image */
+            height: 100vh; /* Ensures the body fills the viewport */
+        }
+</style>
+</head>
+<body>
+   <center> <h1>Now playing on Vinylstation</h1>
+    <div id="data-container">Loading data...</div>
+
+    <script>
+	   	let previousData = null;
+	   	
+        async function fetchData() {
+            try {
+                console.log("Fetching JSON data...");
+                const response = await fetch('song.json');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                const data = await response.json();
+                console.log("JSON data fetched successfully:", data);
+
+				// Set background image
+                if (data.track.images.background) {
+                    document.body.style.backgroundImage = `url('${data.track.images.background}')`;
+                }
+
+
+				// Check if data has changed
+                if (JSON.stringify(data) !== JSON.stringify(previousData)) {
+                    console.log("Data has changed. Updating UI...");
+                    updateUI(data);
+                    previousData = data; // Store the current data for comparison
+                } else {
+                    console.log("No changes detected in data.");
+                }
+            
+                // Check if the data contains the expected keys
+                //if (data.track.title && data.track.subtitle && data.track.images.coverart) {
+                //    displayData(data);
+                //} else {
+                //    throw new Error("Missing required properties: 'Title', 'Artist', or 'Coverart'");
+                //}
+            } catch (error) {
+                console.error("Error fetching data:", error.message);
+                document.getElementById('data-container').textContent =
+                    `Error loading data: ${error.message}`;
+            }
+        }
+     function updateUI(data) {
+            const container = document.getElementById('data-container');
+
+            // Update background image
+            if (data.background) {
+                document.body.style.backgroundImage = `url('${data.background}')`;
+            }
+
+            // Update content display
+            const content = `
+                <div class="data-display">
+                    <img src="${data.track.images.coverart}" alt="${data.track.title} cover art">
+                    <div>
+                        <h2>${data.track.title}</h2>
+                        <p><strong>Artist:</strong> ${data.track.subtitle}</p>
+                        <p><strong>Album:</strong> ${data.track.sections.metadata}</p>
+                        <p><strong>Released:</strong> ${data.track.sections.metadata}</p>
+                        <p><strong>Genre:</strong> ${data.track.genres.primary}</p>
+                    </div>
+                </div>
+            `;
+            container.innerHTML = content;
+        }
+	  // Fetch data initially and then set up periodic updates 
+        fetchData();
+        setInterval(fetchData, 10000); // Poll every 10 seconds
+    </script>
+    
+
+</center>
+</body>
+</html>
 
