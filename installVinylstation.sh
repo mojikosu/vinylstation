@@ -449,6 +449,7 @@ end
 harbor.http.register(port=7000,method="GET","/getmeta",get_meta)
 
 #===========PREPARE HLS SETTINGS=================
+#< removing aac_lofi and aac_midfi settings one HLS stream is enough
 aac_lofi = %ffmpeg(
     format="adts",
     %audio(
@@ -474,7 +475,7 @@ aac_midfi = %ffmpeg(
        id3_version=4,
        replay_id3=true,
 }
-       
+>#
 aac_hifi = %ffmpeg(
     format="adts", #metadata successfully sent with adts
     %audio(
@@ -487,15 +488,12 @@ aac_hifi = %ffmpeg(
         # Adds an extra tag to this stream.
        id3_version=4,
        replay_id3=true,
-       #extra_tags = ["WXXX", "album", "genre", "year"]
-       #extra_tags = ["WXXX"]
-       #extra_tags = ['#EXTINF:-1 tvg-logo="http://192.168.39.19/template.jpg", #EXTIMG: http://192.168.39.19/template.jpg']
-       }
+   }
 
 # Put them all together 
 hls_streams = [
-		("aac_lofi", aac_lofi), 
-		("aac_midfi", aac_midfi), 
+#		("aac_lofi", aac_lofi), 
+#		("aac_midfi", aac_midfi), 
 		("aac_hifi", aac_hifi)]
 
 def hls_segment_name(metadata) =
