@@ -302,8 +302,8 @@ sudo tee /etc/icecast2/icecast.xml <<EOF
     </security>
 </icecast>
 EOF
-sudo systemctl enable icecast2
-echo -e "\e[1;42mConfigure Icecast and enable service \e[0m : \e[1;32mSuccess\e[0m"
+#sudo systemctl enable icecast2
+echo -e "\e[1;42mConfigure Icecast and DO NOT enable service - run sudo systemctl enable icecast2 if your want do enable\e[0m : \e[1;32mSuccess\e[0m"
 
 
 #================ Create LIQUIDSOAP Streaming Engine configuration with HLS output ===========
@@ -328,7 +328,7 @@ s = bass_boost(frequency=140.0 ,gain=1.2 ,s)
 #======================FORMATS======================================================
 #-----------------MP3 Stream with floating point encoder
 #f = %mp3.cbr(samplerate=44100,bitrate=320)
-f = %ffmpeg(format="mp3", %audio(codec="libmp3lame", samplerate=44100, sample_format="s16", channels=2, b="320k"))
+#f = %ffmpeg(format="mp3", %audio(codec="libmp3lame", samplerate=44100, sample_format="s16", channels=2, b="320k"))
 #-----------------FLAC stream with OGG encapsulation
 #fflac = %ogg(%flac(samplerate=44100,channels=2,compression=5,bits_per_sample=16))
 #fflac = %ffmpeg(format="ogg", %audio(codec="flac", samplerate=44100, sample_format="s16", channels=2))
@@ -449,7 +449,7 @@ end
 harbor.http.register(port=7000,method="GET","/getmeta",get_meta)
 
 #===========PREPARE HLS SETTINGS=================
-#< removing aac_lofi and aac_midfi settings one HLS stream is enough
+#< removing aac_lofi and aac_midfi settings  - one HLS stream is enough for local in-house service
 aac_lofi = %ffmpeg(
     format="adts",
     %audio(
@@ -531,6 +531,8 @@ output.file.hls(playlist="vinylstation.m3u8",
 
 
 #---------------Icecast Output-------------------
+
+#<========== Disabled Outputs ============
 #---------------------MP3------------------------
 output.icecast(f, 
 host = "127.0.0.1", 
@@ -544,7 +546,6 @@ send_icy_metadata=true,
 description="VinylStation - powered by Technics turntables",
 #url="http://IP-ADDRESS&#8221;,
 s)
-#<========== Disabled Outputs ============
 #-----------------OGG/Vorbis--------------------
 output.icecast(fvorbis,
 host = "127.0.0.1",
