@@ -18,7 +18,7 @@ Upon unwrapping my late dad's vintage HiFi setup he got just before my birth, I 
 - Output the digitised stream over HLS
   
 ## Requirements:
-- Raspberry Pi 4 or 3b+ with internet access (WARNING: My test have shown that a **Raspi 3b**+ is capable at most of outputting **one** HLS stream alongside audio fingerprinting. If you should choose to output multiple audio streams, expect considerable dropouts! Please adapt the configuration files accordingly.) 
+- Raspberry Pi 4 or 3b+ with internet access (WARNING: My test have shown that a **Raspi 3b**+ is capable at most of outputting **one** HLS stream alongside audio fingerprinting. If you should choose to output multiple audio streams, expect considerable dropouts! Please adapt the configuration files accordingly.) \Therefore, Icecast MP3 stream has been disabled in the script to make VinylStation a purely HLS streaming device. However, all the code necessary is still contained in the script and the relevant files are created. So it's up to you to choose how you would like to stream. Currently, this involves a bit of code digging.
 - Recent Raspbian OS Lite (≥ Bookworm, ≥ 32-bit)
 - Micro SD card (8Gb is enough)
 - A USB (Phono Preamp) sound interface **Note**: In fact, you can hook up any analog audio source, as the underlying software is source media agnostic. Successfully tested have been: https://www.behringer.com/product.html?modelCode=0805-AAF and https://artproaudio.com/phonopreamps/product/357989/usbphonoplusprojectseries 
