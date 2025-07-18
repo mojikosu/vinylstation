@@ -735,6 +735,7 @@ echo -e "\e[1;42mCompile FFmpeg with fdk-aac libvorbis libmp3lame flac\e[0m : \e
 echo -e "\e[1;42mGet songrec opensource Shazam client and compile\e[0m"
 sudo apt-get update && sudo apt-get -y upgrade
 sudo apt-get -y install mercurial git darcs bubblewrap
+cd ~
 curl https://sh.rustup.rs -sSf | sh
 
 echo "export PATH="$HOME/.cargo/bin:$PATH"" | tee -a ~/.profile ~/.bashrc
