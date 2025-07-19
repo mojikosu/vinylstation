@@ -756,7 +756,7 @@ opam pin -ny git+https://github.com/savonet/liquidsoap
 check_status "Pin Liquidsoap repository failed."
 
 #Line below generates some package conflicts in recent versions
-#opam install -y ocurl taglib mad lame vorbis cry alsa pulseaudio shine flac ffmpeg liquidsoap
+#opam install -y ssl ocurl taglib mad lame vorbis cry alsa pulseaudio shine flac ffmpeg liquidsoap
 #Following line prefers FFmpeg for lame, vorbis
 opam install -y ocurl taglib mad lame cry alsa pulseaudio shine ffmpeg liquidsoap
 check_status "Install Liquidsoap and dependencies failed."
