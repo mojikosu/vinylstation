@@ -720,15 +720,12 @@ git clone --depth 1 https://github.com/mstorsjo/fdk-aac.git ~/ffmpeg-libraries/f
   && make -j$(nproc) \
   && sudo make install ;
 cd ~ ;
-echo -e "\e[1;42mGet FFmpeg source (v.7.1)\e[0m"
-#wget https://ffmpeg.org/releases/ffmpeg-7.1.1.tar.xz; #This gets said version of ffmpeg.
-#tar -xf ffmpeg-7.1.tar.xz ;
-#cd ffmpeg-7.1 ;
+echo -e "\e[1;42mGet FFmpeg source (v.7.1.1)\e[0m"
+#curl -L https://ffmpeg.org/releases/ffmpeg-snapshot.tar.bz2 | tar -xj && cd ffmpeg; #this gets latest snapshot; might not compile correctly though
+curl -L https://ffmpeg.org/releases/ffmpeg-7.1.1.tar.xz | tar -xJ && cd ffmpeg-7.1.1; #This gets said version of ffmpeg.
 
-curl -L https://ffmpeg.org/releases/ffmpeg-snapshot.tar.bz2 | tar -xj && cd ffmpeg; #this gets latest snapshow
 echo -e "\e[1;42mCompile FFmpeg with fdk-aac libvorbis libmp3lame flac\e[0m"
-./configure --enable-shared  --enable-libfdk-aac --enable-libvorbis --enable-libmp3lame --enable-pic \
-&& make && sudo make install && sudo ldconfig
+./configure --enable-shared  --enable-libfdk-aac --enable-libvorbis --enable-libmp3lame --enable-pic && make && sudo make install && sudo ldconfig
 echo -e "\e[1;42mCompile FFmpeg with fdk-aac libvorbis libmp3lame flac\e[0m : \e[1;32mSuccess\e[0m"
 
 #=======================Get SONGREC Source & compile===================
