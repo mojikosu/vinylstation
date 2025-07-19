@@ -33,7 +33,9 @@ echo -e "\e[1;42mGet OPAM and prepare switch\e[0m"
 bash -c "sh <(curl -fsSL https://raw.githubusercontent.com/ocaml/opam/master/shell/install.sh)"
 check_status "Install OPAM failed."
 opam init -y --bare --shell-setup --disable-sandboxing 
-opam switch create liquidsoap ocaml-base-compiler.4.14.2 -y
+#opam switch create liquidsoap ocaml-base-compiler.4.14.2 -y #This line works on RasPi3+
+opam switch create liquidsoap ocaml-base-compiler.5.3.0 -y
+
 check_status "Create OPAM switch failed."
 eval "$(opam env --switch=liquidsoap)"
 #export IS_SNAPSHOT=false;
