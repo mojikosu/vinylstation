@@ -675,7 +675,7 @@ server {
 
   location ~ \.(ts|m3u8)$ {
     add_header Allow "GET, HEAD" always;
-    if ( $request_method !~ ^(GET|HEAD)$ ) {
+    if ($request_method !~ ^(GET|HEAD)$) {
       return 405;
     }
 
