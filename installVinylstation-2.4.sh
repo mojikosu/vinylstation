@@ -350,7 +350,7 @@ s = bass_boost(frequency=140.0 ,gain=1.2 ,s)
 current_coverart = ref ("")
 
 #======Prepare source to accept metadata injection=========
-s = insert_metadata(s)
+#s = insert_metadata(s)
 #================ Metadata grab and update section =========================================
 #======== Launch songrec to detect one song, output as JSON, insert metadata into source stream========
 def metadataupdater()
