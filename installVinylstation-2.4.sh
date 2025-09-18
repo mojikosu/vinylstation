@@ -390,7 +390,7 @@ let sections = parsed_data.track.sections
 #code provided by @vitoyucepi to get the deeply nested metadata under sections
 metadata_list =
   try
-    metadata_section = list.find(fun(section) -> section.metadata != null(), sections)
+    metadata_section = list.find(fun(section) -> section.metadata != null, sections)
     list.map(
       fun(metadata_item) -> (metadata_item.title, metadata_item.text),
       null.get(metadata_section.metadata)
@@ -428,20 +428,21 @@ def handleblank()
  thread.run(metadataupdater)
 end
 
-silent = ref(false)
-
+#Attach blank.detect capabilities to source
 s = blank.detect(
-  threshold=-21., 
-  max_blank=1., 
-  on_noise=handleblank, 
-  {silent := true},
+  threshold=-21.,
+  max_blank=1.,
+  start_blank=true,
+  track_sensitive=true,
   s)
+#Launch on_noise callback
+s.on_noise(synchronous=false, fun () -> begin handleblank() end)
 
 #==============CREATE HTTP SERVER FOR METADATA OUTPUT================
 meta = ref([])
 
 # s = some source
-s.on_metadata(fun (m) -> meta := m)
+s.on_metadata(synchronous=false,fun (m) -> meta := m)
 # Return the json content of meta
 def get_meta(_, response) =
   response.json(meta())
