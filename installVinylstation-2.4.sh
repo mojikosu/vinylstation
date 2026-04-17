@@ -671,6 +671,7 @@ server {
   types {
     application/vnd.apple.mpegurl m3u8;
     video/mp2t ts;
+	audio/aac aac;
   }
 
   location ~ \.(ts|m3u8)$ {
