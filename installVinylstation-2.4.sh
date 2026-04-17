@@ -734,7 +734,7 @@ echo -e "\e[1;42mCompile FFmpeg with fdk-aac libvorbis libmp3lame flac\e[0m : \e
 #=======================Get SONGREC Source & compile===================
 echo -e "\e[1;42mGet songrec opensource Shazam client and compile\e[0m"
 sudo apt-get update && sudo apt-get -y upgrade
-sudo apt-get -y install mercurial git darcs bubblewrap
+sudo apt-get -y install mercurial git darcs bubblewrap libpipewire-0.3-dev libpipewire-0.3
 cd ~
 curl https://sh.rustup.rs -sSf | sh
 
