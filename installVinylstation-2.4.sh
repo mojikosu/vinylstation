@@ -646,13 +646,15 @@ sudo tee /lib/systemd/system/liquidsoap.service <<EOF
 #goes into /lib/systemd/system/
 [Unit]
 Description=Liquidsoap Stream Engine
-After=multi-user.target
+After= network.target sound.target multi-user.target
 
 [Service]
-ExecStart=/home/$USER/.opam/liquidsoap/bin/liquidsoap /etc/liquidsoap/vinylfromWax.liq
-Restart=always
 User=$USER
-
+ExecStartPre=/bin/mkdir -p /var/www/html/hls/persist
+#ExecStartPre=/bin/chown -R $USER:$USER /var/www/html/hls
+ExecStart=/home/$USER/.opam/liquidsoap/bin/liquidsoap /etc/liquidsoap/vinylfromWax.liq
+Restart=on-failure
+RestartSec=5
 [Install]
 WantedBy=multi-user.target
 EOF
