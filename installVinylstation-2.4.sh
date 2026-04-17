@@ -662,7 +662,7 @@ echo -e "\e[1;42mConfigure liquidsoap.service\e[0m : \e[1;32mSuccess\e[0m"
 #=================================Configure NGINX with HLS streamer
 sudo tee /etc/nginx/sites-available/HLS-vinylstation.conf <<EOF
 
-#based on https://github.com/radiofrance/rf-liquidsoap/blob/master/example/nginx/hls.conf
+#inspired by https://github.com/radiofrance/rf-liquidsoap/blob/master/example/nginx/hls.conf
 server {
   listen 8080;
   server_name _;
@@ -671,40 +671,42 @@ server {
   types {
     application/vnd.apple.mpegurl m3u8;
     video/mp2t ts;
-	audio/aac aac;
+    audio/aac aac;
   }
 
+  # CORS + method restriction for HLS files
   location ~ \.(ts|m3u8)$ {
     add_header Allow "GET, HEAD" always;
     if ($request_method !~ ^(GET|HEAD)$) {
       return 405;
     }
 
-    root /var/www/html/hls;
-
     add_header 'Access-Control-Allow-Origin' '*';
     add_header 'Access-Control-Allow-Methods' 'GET';
     add_header 'Access-Control-Allow-Headers' '*';
-
-    location ~ \.(ts)$ {
-      add_header 'Cache-Control' 'public, max-age=660';
-    }
-
-    location ~ (lofi|midfi|hifi)\.(m3u8)$ {
-      add_header 'Cache-Control' 'max-age=1';
-    }
-
-    location ~ \.(m3u8)$ {
-      add_header 'Cache-Control' 'max-age=600';
-    }
   }
 
+  # TS segment caching (long)
+  location ~ \.ts$ {
+    add_header Cache-Control "public, max-age=660";
+  }
+
+  # Low-latency playlists
+  location ~ (lofi|midfi|hifi)\.m3u8$ {
+    add_header Cache-Control "max-age=1";
+  }
+
+  # Default playlist caching
+  location ~ \.m3u8$ {
+    add_header Cache-Control "no-cache";
+  }
+
+  # Directory listing
   location / {
     autoindex on;
     autoindex_format html;
   }
 }
-
 
 EOF
 sudo ln -s /etc/nginx/sites-available/HLS-vinylstation.conf /etc/nginx/sites-enabled
