@@ -27,7 +27,7 @@ Therefore, Icecast MP3 stream has been disabled in the script to make VinylStati
 ## Relevant sofware packages:
 - Liquidsoap - open-source stream generator
 - songrec - open-source Shazam client
-- pulseaudio (for simultaneous access to the sound device by liquisoap and songrec)
+- pipewire with pulseaudio compatibility layer (for simultaneous access to the sound device by liquisoap and songrec)
 
 ## Script logic:
 1. Prepare host with prerequisites
@@ -44,7 +44,7 @@ C) Create history and statistics on music played.
 
 ## Installation:
 Log into your Raspberry Pi and run :\
-```bash <(curl -fsSL https://raw.githubusercontent.com/mojikosu/vinylstation/refs/heads/main/installVinylstation.sh)```
+```bash <(curl -fsSL https://raw.githubusercontent.com/mojikosu/vinylstation/refs/heads/main/installVinylstation-V2-Liquidsoap-Rolling.sh)```
 
 ## JSON Web output:
 Selected metadata is available in JSON format under ```http://your VinylStation IP here:7000/getmeta```
@@ -55,6 +55,6 @@ It looks like this:\
 ![Metadata within SONOS](sonos-metadata-example.jpeg?raw=true "Title")
 
 ## Home Assistant
-I use Home Assistant (https://www.home-assistant.io) with the SONOS devices to tap into the metadata and coverart to set the mood lighting in the living room dynamically using ad-media-lights-sync (https://github.com/ericmatte/ad-media-lights-sync/releases/tag/v0.6.0) running under Home Assistant's AppDaemon Add-on. It's a lot of fun, see here. 
+I use Home Assistant (https://www.home-assistant.io) with the SONOS devices to tap into the metadata and coverart to set the mood lighting in the living room dynamically using ad-media-lights-sync (https://github.com/ericmatte/ad-media-lights-sync) running under Home Assistant's AppDaemon Add-on. It's a lot of fun, see here. 
 (Yes, the disco ball is illuminated, based on the genre of the track played. Thank you for asking. ;) )\
 ![Mood Lighting](m-lighting-based-on-coverart.jpeg)
