@@ -784,7 +784,7 @@ check_status "Pin Liquidsoap repository failed."
 #Line below generates some package conflicts in recent versions
 #opam install -y ssl ocurl taglib mad lame vorbis cry alsa pulseaudio shine flac ffmpeg liquidsoap
 #Following line prefers FFmpeg for lame, vorbis
-opam install -y curl taglib mad lame cry alsa pulseaudio pipewire shine ffmpeg liquidsoap
+opam install -y curl mad lame cry alsa pulseaudio shine ffmpeg liquidsoap
 check_status "Install Liquidsoap and dependencies failed."
 
 systemctl --user daemon-reload
