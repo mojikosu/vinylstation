@@ -619,16 +619,16 @@ echo -e "\e[1;42mCreate LIQUIDSOAP Streaming Engine configuration with HLS outpu
 sudo tee /etc/asound.conf <<EOF
 #goes into /etc/
 #This config is for use with PulseAudio
-pcm.!default {
-    type hw
-    card 0
-    device 0
-    format S16_LE
-    channels 2
-    rate 44100
-    period_size 1024
-    buffer_size 4096
-}
+#pcm.!default {
+#    type hw
+#    card 0
+#    device 0
+#    format S16_LE
+#    channels 2
+#    rate 44100
+#    period_size 1024
+#    buffer_size 4096
+#}
 
 #What you see here below are configs that worked well with ALSA
 #pcm.!default {
@@ -663,7 +663,7 @@ tee ~/.config/systemd/user/liquidsoap.service > /dev/null <<EOF
 
 [Unit]
 Description=Liquidsoap Stream Engine
-After= pipewire.service
+After=pipewire.service
 
 [Service]
 ExecStart=/home/$USER/.opam/liquidsoap/bin/liquidsoap /etc/liquidsoap/vinylfromWax.liq
