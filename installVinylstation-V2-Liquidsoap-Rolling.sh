@@ -771,7 +771,7 @@ cd songrec
 cp -a .github/hooks/* .git/hooks/ # Or (less secure): git config core.hooksPath .github/hooks
 
 #OLD cargo build --release --no-default-features -F ffmpeg,mpris
-cargo run --release --no-default-features -F pulse
+cargo build --release --no-default-features -F pulse
 sudo mv ~/songrec/target/release/songrec /usr/sbin/
 echo -e "\e[1;42mGet songrec opensource Shazam client and compile\e[0m : \e[1;32mSuccess\e[0m"
 
