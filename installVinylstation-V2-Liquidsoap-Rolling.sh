@@ -324,7 +324,7 @@ echo -e "\e[1;42mConfigure Icecast and DO NOT enable service - run sudo systemct
 
 #================ Create LIQUIDSOAP Streaming Engine configuration with HLS output ===========
 sudo tee /etc/liquidsoap/vinylfromWax.liq <<EOF
-#!/home/$USER/.opam/default/bin/liquidsoap
+#!/home/$USER/.opam/liquidsoap/bin/liquidsoap
 # set the path and permissions for the logfile
 settings.log.file.path := "/var/log/liquidsoap/VinylfromWax.log"
 settings.log.file.perms := 777
@@ -761,7 +761,7 @@ echo -e "\e[1;42mCompile FFmpeg with fdk-aac libvorbis libmp3lame flac\e[0m : \e
 echo -e "\e[1;42mGet songrec opensource Shazam client and compile\e[0m"
 sudo apt-get update && sudo apt-get -y upgrade
 sudo apt install build-essential libasound2-dev libpipewire-0.3-dev libclang-dev libpulse-dev libgtk-4-dev libsoup-3.0-dev libadwaita-1-dev libdbus-1-dev intltool -y
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh # Type "1"
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y #if code breaks, remove -s -- -y
 # Login and reconnect to add Rust to the $PATH, or run:
 source $HOME/.cargo/env
 
