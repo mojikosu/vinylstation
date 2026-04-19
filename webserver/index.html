@@ -4,25 +4,87 @@
 <title>Welcome to Vinylstation</title>
 <style>
 html { color-scheme: light dark; }
-body { margin: 0 auto;
-font-family: Tahoma, Verdana, Arial, sans-serif; 
-            margin: 0;
-            padding: 0;
-            background-image: url('img/vinylstationbackground.jpg'); /* Replace with your image URL */
-            background-size: cover; /* Ensures the image covers the entire viewport */
-            background-position: center; /* Centers the image */
-            background-repeat: no-repeat; /* Prevents tiling of the image */
-            height: 100vh; /* Ensures the body fills the viewport */
-        }
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Tahoma, Verdana, Arial, sans-serif;
+    background-image: url('img/vinylstationbackground.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    height: 100vh;
+    position: relative;
+    transition: color 0.5s ease; /* smooth colour transition */
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-color: rgba(50, 50, 50, 0.5);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 0;
+}
+
+body > * {
+    position: relative;
+    z-index: 1;
+}
 </style>
 </head>
 <body>
-   <center> <h1>Now playing on Vinylstation</h1>
+   <center><h1>Now playing on Vinylstation</h1>
     <div id="data-container">Loading data...</div>
-
     <script>
-	   	let previousData = null;
-	   	
+        let previousData = null;
+
+        /**
+         * Samples an image URL and returns its average luminance (0–255).
+         * Resolves even on CORS errors so the page never breaks.
+         */
+        function getAverageLuminance(imageUrl) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    // Sample a small thumbnail for performance
+                    canvas.width  = 50;
+                    canvas.height = 50;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, 50, 50);
+                    const { data } = ctx.getImageData(0, 0, 50, 50);
+                    let total = 0;
+                    for (let i = 0; i < data.length; i += 4) {
+                        // Perceived luminance weights
+                        total += data[i] * 0.299 + data[i+1] * 0.587 + data[i+2] * 0.114;
+                    }
+                    resolve(total / (data.length / 4));
+                };
+                img.onerror = () => resolve(128); // Fallback: assume mid-tone
+                img.src = imageUrl;
+            });
+        }
+
+        /**
+         * Adjusts body text colour based on background brightness.
+         * The gray overlay darkens the image, so we account for that by
+         * blending the overlay colour into the luminance calculation.
+         */
+        async function adaptTextColour(imageUrl) {
+            const rawLuminance = await getAverageLuminance(imageUrl);
+            // The overlay is rgba(50,50,50,0.5) — blend at 50% opacity
+            const overlayLuminance = 50;
+            const overlayOpacity  = 0.5;
+            const effectiveLuminance = rawLuminance * (1 - overlayOpacity)
+                                     + overlayLuminance * overlayOpacity;
+
+            // If the resulting background is dark, use white text, otherwise dark
+            document.body.style.color = effectiveLuminance < 128 ? '#ffffff' : '#1a1a1a';
+        }
+
         async function fetchData() {
             try {
                 console.log("Fetching JSON data...");
@@ -33,42 +95,33 @@ font-family: Tahoma, Verdana, Arial, sans-serif;
                 const data = await response.json();
                 console.log("JSON data fetched successfully:", data);
 
-				// Set background image
-                if (data.track.images.background) {
-                    document.body.style.backgroundImage = `url('${data.track.images.background}')`;
+                // Set background image
+                const bgUrl = data.track.images.background;
+                if (bgUrl) {
+                    document.body.style.backgroundImage = `url('${bgUrl}')`;
+                    await adaptTextColour(bgUrl);
                 }
 
-
-				// Check if data has changed
+                // Check if data has changed
                 if (JSON.stringify(data) !== JSON.stringify(previousData)) {
                     console.log("Data has changed. Updating UI...");
                     updateUI(data);
-                    previousData = data; // Store the current data for comparison
+                    previousData = data;
                 } else {
                     console.log("No changes detected in data.");
                 }
-            
-                // Check if the data contains the expected keys
-                //if (data.track.title && data.track.subtitle && data.track.images.coverart) {
-                //    displayData(data);
-                //} else {
-                //    throw new Error("Missing required properties: 'Title', 'Artist', or 'Coverart'");
-                //}
             } catch (error) {
                 console.error("Error fetching data:", error.message);
                 document.getElementById('data-container').textContent =
                     `Error loading data: ${error.message}`;
             }
         }
-     function updateUI(data) {
-            const container = document.getElementById('data-container');
 
-            // Update background image
+        function updateUI(data) {
+            const container = document.getElementById('data-container');
             if (data.background) {
                 document.body.style.backgroundImage = `url('${data.background}')`;
             }
-
-            // Update content display
             const content = `
                 <div class="data-display">
                     <img src="${data.track.images.coverart}" alt="${data.track.title} cover art">
@@ -83,13 +136,10 @@ font-family: Tahoma, Verdana, Arial, sans-serif;
             `;
             container.innerHTML = content;
         }
-	  // Fetch data initially and then set up periodic updates 
-        fetchData();
-        setInterval(fetchData, 10000); // Poll every 10 seconds
-    </script>
-    
 
+        fetchData();
+        setInterval(fetchData, 10000);
+    </script>
 </center>
 </body>
 </html>
-
