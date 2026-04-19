@@ -754,7 +754,30 @@ curl -L https://ffmpeg.org/releases/ffmpeg-snapshot.tar.bz2 | tar -xj && cd ffmp
 #curl -L https://ffmpeg.org/releases/ffmpeg-7.1.1.tar.xz | tar -xJ && cd ffmpeg-7.1.1; #This gets said version of ffmpeg.
 
 echo -e "\e[1;42mCompile FFmpeg with fdk-aac libvorbis libmp3lame flac\e[0m"
-./configure --enable-shared  --enable-libfdk-aac --enable-libvorbis --enable-libmp3lame --enable-pic && make && sudo make install && sudo ldconfig
+#./configure --enable-shared  --enable-libfdk-aac --enable-libvorbis --enable-libmp3lame --enable-pic && make && sudo make install && sudo ldconfig
+#Try this below, line above is known good, but lengthy build
+./configure \
+  --disable-everything \
+#  --enable-protocol=file \
+#  --enable-protocol=http \
+#  --enable-protocol=https \
+  --disable-protocol=https \
+  --enable-demuxer=pcm_s16le \
+  --enable-demuxer=mp3 \
+  --enable-muxer=mp3 \
+  --enable-muxer=adts \
+  --enable-muxer=hls \
+  --enable-encoder=aac \
+  --enable-encoder=libmp3lame \
+  --enable-decoder=pcm_s16le \
+  --enable-decoder=mp3 \
+  --enable-decoder=aac \
+  --enable-filter=anull \
+  --disable-debug \
+  --disable-doc \
+  --disable-programs \
+  --disable-network-docs \
+  --enable-shared  --enable-libfdk-aac --enable-libvorbis --enable-libmp3lame --enable-pic && make && sudo make install && sudo ldconfig
 echo -e "\e[1;42mCompile FFmpeg with fdk-aac libvorbis libmp3lame flac\e[0m : \e[1;32mSuccess\e[0m"
 
 #=======================Get SONGREC Source & compile====VALIDATED===============
