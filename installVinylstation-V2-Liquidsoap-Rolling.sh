@@ -791,7 +791,13 @@ systemctl --user daemon-reload
 systemctl --user enable liquidsoap
 
 echo -e "\e[1;42mGet liquidsoap rolling release source & compile : \e[1;32mSuccess\e[0m"
+#=====================================Improve startup time==============================
+echo -e "\e[1;42mImprove startup time: networkmanager online wait, cloud init \e[1;32mSuccess\e[0m"
+sudo systemctl disable NetworkManager-wait-online.service
+sudo systemctl disable cloud-init cloud-init-local cloud-config cloud-final
+sudo apt purge cloud-init -y
 
+#=====================================Final Message==============================
 echo -e "\e[1;42mVinylstation successfully installed\e[0m\n
 ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▒▒▓▒░░░░░░░░░░░░░░░
