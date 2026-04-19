@@ -758,26 +758,38 @@ echo -e "\e[1;42mCompile FFmpeg with fdk-aac libvorbis libmp3lame flac\e[0m"
 #Try this below, line above is known good, but lengthy build
 ./configure \
   --disable-everything \
-#  --enable-protocol=file \
-#  --enable-protocol=http \
-#  --enable-protocol=https \
-  --disable-protocol=https \
-  --enable-demuxer=pcm_s16le \
+  --disable-autodetect \
+  --disable-programs \
+  --disable-doc \
+  --disable-debug \
+  --disable-network \
+  --disable-hwaccels \
+  --disable-indevs \
+  --disable-outdevs \
+  --disable-encoders \
+  --disable-decoders \
+  --disable-muxers \
+  --disable-demuxers \
+  --disable-parsers \
+  --disable-bsfs \
+  --enable-protocol=file \
+  --enable-nonfree \
+  --enable-gpl \
   --enable-demuxer=mp3 \
+  --enable-demuxer=pcm_s16le \
   --enable-muxer=mp3 \
   --enable-muxer=adts \
   --enable-muxer=hls \
-  --enable-encoder=aac \
+  --enable-muxer=mpegts \
+  --enable-encoder=libfdk_aac \
   --enable-encoder=libmp3lame \
-  --enable-decoder=pcm_s16le \
   --enable-decoder=mp3 \
+  --enable-decoder=pcm_s16le \
+  --enable-encoder=aac \
   --enable-decoder=aac \
+  --enable-parser=aac \
   --enable-filter=anull \
-  --disable-debug \
-  --disable-doc \
-  --disable-programs \
-  --disable-network-docs \
-  --enable-shared  --enable-libfdk-aac --enable-libvorbis --enable-libmp3lame --enable-pic && make && sudo make install && sudo ldconfig
+  --enable-shared --enable-libfdk-aac --enable-libvorbis --enable-libmp3lame --enable-pic && make -j$(nproc) && sudo make install && sudo ldconfig
 echo -e "\e[1;42mCompile FFmpeg with fdk-aac libvorbis libmp3lame flac\e[0m : \e[1;32mSuccess\e[0m"
 
 #=======================Get SONGREC Source & compile====VALIDATED===============
