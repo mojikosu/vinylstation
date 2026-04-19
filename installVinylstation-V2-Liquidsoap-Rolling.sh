@@ -324,7 +324,7 @@ echo -e "\e[1;42mConfigure Icecast and DO NOT enable service - run sudo systemct
 
 #================ Create LIQUIDSOAP Streaming Engine configuration with HLS output ===========
 sudo tee /etc/liquidsoap/vinylfromWax.liq <<EOF
-#!/home/$USER/.opam/default/bin/liquidsoap
+#!/home/$USER/.opam/liquidsoap/bin/liquidsoap
 # set the path and permissions for the logfile
 settings.log.file.path := "/var/log/liquidsoap/VinylfromWax.log"
 settings.log.file.perms := 777
@@ -619,16 +619,16 @@ echo -e "\e[1;42mCreate LIQUIDSOAP Streaming Engine configuration with HLS outpu
 sudo tee /etc/asound.conf <<EOF
 #goes into /etc/
 #This config is for use with PulseAudio
-pcm.!default {
-    type hw
-    card 0
-    device 0
-    format S16_LE
-    channels 2
-    rate 44100
-    period_size 1024
-    buffer_size 4096
-}
+#pcm.!default {
+#    type hw
+#    card 0
+#    device 0
+#    format S16_LE
+#    channels 2
+#    rate 44100
+#    period_size 1024
+#    buffer_size 4096
+#}
 
 #What you see here below are configs that worked well with ALSA
 #pcm.!default {
@@ -663,7 +663,7 @@ tee ~/.config/systemd/user/liquidsoap.service > /dev/null <<EOF
 
 [Unit]
 Description=Liquidsoap Stream Engine
-After= pipewire.service
+After=pipewire.service
 
 [Service]
 ExecStart=/home/$USER/.opam/liquidsoap/bin/liquidsoap /etc/liquidsoap/vinylfromWax.liq
@@ -761,7 +761,7 @@ echo -e "\e[1;42mCompile FFmpeg with fdk-aac libvorbis libmp3lame flac\e[0m : \e
 echo -e "\e[1;42mGet songrec opensource Shazam client and compile\e[0m"
 sudo apt-get update && sudo apt-get -y upgrade
 sudo apt install build-essential libasound2-dev libpipewire-0.3-dev libclang-dev libpulse-dev libgtk-4-dev libsoup-3.0-dev libadwaita-1-dev libdbus-1-dev intltool -y
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh # Type "1"
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y #if code breaks, remove -s -- -y
 # Login and reconnect to add Rust to the $PATH, or run:
 source $HOME/.cargo/env
 
@@ -771,7 +771,7 @@ cd songrec
 cp -a .github/hooks/* .git/hooks/ # Or (less secure): git config core.hooksPath .github/hooks
 
 #OLD cargo build --release --no-default-features -F ffmpeg,mpris
-cargo run --release --no-default-features -F pulse
+cargo build --release --no-default-features -F pulse
 sudo mv ~/songrec/target/release/songrec /usr/sbin/
 echo -e "\e[1;42mGet songrec opensource Shazam client and compile\e[0m : \e[1;32mSuccess\e[0m"
 
@@ -784,7 +784,7 @@ check_status "Pin Liquidsoap repository failed."
 #Line below generates some package conflicts in recent versions
 #opam install -y ssl ocurl taglib mad lame vorbis cry alsa pulseaudio shine flac ffmpeg liquidsoap
 #Following line prefers FFmpeg for lame, vorbis
-opam install -y curl taglib mad lame cry alsa pulseaudio pipewire shine ffmpeg liquidsoap
+opam install -y curl mad lame cry alsa pulseaudio shine ffmpeg liquidsoap
 check_status "Install Liquidsoap and dependencies failed."
 
 systemctl --user daemon-reload
