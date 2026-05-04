@@ -480,7 +480,7 @@ aac_lofi = %ffmpeg(
     }
     
 aac_midfi = %ffmpeg(
-    format="adts",
+    format="mpegts",
     %audio(
         codec="aac",
        samplerate=44100,
@@ -494,7 +494,7 @@ aac_midfi = %ffmpeg(
 }
 >#
 aac_hifi = %ffmpeg(
-    format="adts", #metadata successfully sent with adts
+    format="mpegts", #metadata successfully sent with adts, in new versions mpegts also now works correctly
     %audio(
         codec="aac",
         samplerate=44100,
@@ -616,7 +616,7 @@ sudo sed -i "s/\$USER/$USER/g" /etc/liquidsoap/vinylfromWax.liq
 echo -e "\e[1;42mCreate LIQUIDSOAP Streaming Engine configuration with HLS output\e[0m : \e[1;32mSuccess\e[0m"
 #================Congifure sound interface for liquidsoap=================
 
-sudo tee /etc/asound.conf <<EOF
+#sudo tee /etc/asound.conf <<EOF
 #goes into /etc/
 #This config is for use with PulseAudio
 #pcm.!default {
@@ -654,8 +654,8 @@ sudo tee /etc/asound.conf <<EOF
 #       1 1
 #   }
 #}
-EOF
-echo -e "\e[1;42mCreate ALSA configuration file, PulseAudio version - see notes inside /etc/asound.conf \e[0m : \e[1;32mSuccess\e[0m"
+#EOF
+#echo -e "\e[1;42mCreate ALSA configuration file, PulseAudio version - see notes inside /etc/asound.conf \e[0m : \e[1;32mSuccess\e[0m"
 
 #========================= Configure liquidsoap.service and set it up as a user-space service
 mkdir -p ~/.config/systemd/user
