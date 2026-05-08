@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to Vinylstation</title>
+
+<style>
+html {
+    color-scheme: light dark;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Tahoma, Verdana, Arial, sans-serif;
+    background-image: url('img/vinylstationbackground.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    height: 100vh;
+    position: relative;
+    transition:
+        color 0.5s ease,
+        background-image 0.8s ease;
+    overflow: hidden;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-color: rgba(50, 50, 50, 0.5);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 0;
+}
+
+body > * {
+    position: relative;
+    z-index: 1;
+}
+
+.main-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    text-align: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+h1 {
+    font-size: 42px;
+    margin-bottom: 30px;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+
+.data-display {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    padding: 30px;
+    border-radius: 24px;
+    background: rgba(0,0,0,0.35);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.35);
+    max-width: 900px;
+}
+
+.data-display img {
+    width: 320px;
+    height: 320px;
+    object-fit: cover;
+    border-radius: 18px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+}
+
+.track-info {
+    text-align: left;
+    max-width: 420px;
+}
+
+.track-info h2 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 40px;
+    line-height: 1.1;
+}
+
+.track-info p {
+    margin: 10px 0;
+    font-size: 20px;
+    line-height: 1.5;
+}
+
+.error-box {
+    margin-top: 20px;
+    padding: 35px;
+    max-width: 550px;
+    border-radius: 24px;
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.35);
+    border: 1px solid rgba(255,255,255,0.12);
+}
+
+.error-icon {
+    font-size: 60px;
+    margin-bottom: 15px;
+}
+
+.error-box h2 {
+    margin: 0 0 15px 0;
+    font-size: 34px;
+}
+
+.error-box p {
+    margin: 0;
+    font-size: 18px;
+    line-height: 1.6;
+    opacity: 0.92;
+}
+
+.loading {
+    font-size: 24px;
+    opacity: 0.9;
+}
+
+@media (max-width: 850px) {
+
+    .data-display {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .track-info {
+        text-align: center;
+    }
+
+    .data-display img {
+        width: 240px;
+        height: 240px;
+    }
+
+    .track-info h2 {
+        font-size: 32px;
+    }
+
+    .track-info p {
+        font-size: 18px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="main-container">
+
+    <h1>Now Playing on Vinylstation</h1>
+
+    <div id="data-container" class="loading">
+        Loading data...
+    </div>
+
+</div>
+
+<script>
+let previousData = null;
+
+/**
+ * Samples an image URL and returns its average luminance (0–255).
+ */
+function getAverageLuminance(imageUrl) {
+    return new Promise((resolve) => {
+        const img = new Image();
+
+        img.crossOrigin = 'anonymous';
+
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+
+            canvas.width = 50;
+            canvas.height = 50;
+
+            const ctx = canvas.getContext('2d');
+
+            ctx.drawImage(img, 0, 0, 50, 50);
+
+            const { data } = ctx.getImageData(0, 0, 50, 50);
+
+            let total = 0;
+
+            for (let i = 0; i < data.length; i += 4) {
+                total +=
+                    data[i] * 0.299 +
+                    data[i + 1] * 0.587 +
+                    data[i + 2] * 0.114;
+            }
+
+            resolve(total / (data.length / 4));
+        };
+
+        img.onerror = () => resolve(128);
+
+        img.src = imageUrl;
+    });
+}
+
+/**
+ * Automatically adapts text colour to background brightness.
+ */
+async function adaptTextColour(imageUrl) {
+
+    const rawLuminance = await getAverageLuminance(imageUrl);
+
+    const overlayLuminance = 50;
+    const overlayOpacity = 0.5;
+
+    const effectiveLuminance =
+        rawLuminance * (1 - overlayOpacity) +
+        overlayLuminance * overlayOpacity;
+
+    document.body.style.color =
+        effectiveLuminance < 128
+            ? '#ffffff'
+            : '#1a1a1a';
+}
+
+/**
+ * Displays a styled error box.
+ */
+function showError(title, message, icon = "⚠️") {
+
+    const container = document.getElementById('data-container');
+
+    container.innerHTML = `
+        <div class="error-box">
+            <div class="error-icon">${icon}</div>
+            <h2>${title}</h2>
+            <p>${message}</p>
+        </div>
+    `;
+}
+
+/**
+ * Updates UI with track information.
+ */
+function updateUI(data) {
+
+    const container = document.getElementById('data-container');
+
+    const coverArt =
+        data.track.images?.coverart ||
+        'img/vinylstationbackground.jpg';
+
+    const background =
+        data.track.images?.background ||
+        coverArt;
+
+    const title =
+        data.track.title || 'Unknown Title';
+
+    const artist =
+        data.track.subtitle || 'Unknown Artist';
+
+    const genre =
+        data.track.genres?.primary || 'Unknown Genre';
+
+    let album = 'Unknown Album';
+    let released = 'Unknown Year';
+
+    if (Array.isArray(data.track.sections)) {
+
+        for (const section of data.track.sections) {
+
+            if (section.metadata) {
+
+                for (const item of section.metadata) {
+
+                    if (item.title === 'Album') {
+                        album = item.text;
+                    }
+
+                    if (item.title === 'Released') {
+                        released = item.text;
+                    }
+                }
+            }
+        }
+    }
+
+    document.body.style.backgroundImage = `url('${background}')`;
+
+    adaptTextColour(background);
+
+    container.innerHTML = `
+        <div class="data-display">
+
+            <img
+                src="${coverArt}"
+                alt="${title} cover art"
+            >
+
+            <div class="track-info">
+
+                <h2>${title}</h2>
+
+                <p>
+                    <strong>Artist:</strong><br>
+                    ${artist}
+                </p>
+
+                <p>
+                    <strong>Album:</strong><br>
+                    ${album}
+                </p>
+
+                <p>
+                    <strong>Released:</strong><br>
+                    ${released}
+                </p>
+
+                <p>
+                    <strong>Genre:</strong><br>
+                    ${genre}
+                </p>
+
+            </div>
+
+        </div>
+    `;
+}
+
+/**
+ * Fetches JSON data from song.json
+ */
+async function fetchData() {
+
+    try {
+
+        console.log("Fetching JSON data...");
+
+        const response = await fetch('song.json');
+
+        /**
+         * File missing or unreachable
+         */
+        if (!response.ok) {
+
+            showError(
+                "No Track Information",
+                "The player is currently offline or no song data is available.",
+                "📻"
+            );
+
+            return;
+        }
+
+        let data;
+
+        /**
+         * Invalid JSON
+         */
+        try {
+
+            data = await response.json();
+
+        } catch (jsonError) {
+
+            console.error("JSON parse error:", jsonError);
+
+            showError(
+                "Invalid Song Data",
+                "The JSON file exists but contains invalid or incomplete data.",
+                "🧩"
+            );
+
+            return;
+        }
+
+        /**
+         * Empty or missing track data
+         */
+        if (!data.track) {
+
+            showError(
+                "Waiting for Music",
+                "No track recognition data has been detected yet.",
+                "🎵"
+            );
+
+            return;
+        }
+
+        /**
+         * Update UI only if data changed
+         */
+        if (JSON.stringify(data) !== JSON.stringify(previousData)) {
+
+            console.log("Track data updated.");
+
+            updateUI(data);
+
+            previousData = data;
+
+        } else {
+
+            console.log("No changes detected.");
+        }
+
+    } catch (error) {
+
+        console.error("Fetch error:", error);
+
+        showError(
+            "Connection Problem",
+            "Unable to connect to the Vinylstation data source.",
+            "🌐"
+        );
+    }
+}
+
+/**
+ * Initial fetch
+ */
+fetchData();
+
+/**
+ * Refresh every 10 seconds
+ */
+setInterval(fetchData, 10000);
+
+</script>
+
+</body>
+</html>

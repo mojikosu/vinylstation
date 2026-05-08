@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Vinylstation</title>
+
+<style>
+html { color-scheme: light dark; }
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  background-image: url('img/vinylstationbackground.jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  height: 100vh;
+  transition: color 0.5s ease;
+}
+
+/* Background overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0,0,0,0.6),
+    rgba(50,50,50,0.4)
+  );
+  backdrop-filter: blur(6px);
+  z-index: 0;
+}
+
+body > * {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+}
+
+/* Header */
+h1 {
+  font-weight: 300;
+  letter-spacing: 1px;
+}
+
+/* Pulse indicator */
+.pulse {
+  color: #00ff88;
+  animation: pulse 1.2s infinite;
+}
+
+@keyframes pulse {
+  0%,100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+/* Card */
+.data-display {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
+
+  background: rgba(255,255,255,0.1);
+  padding: 20px;
+  border-radius: 15px;
+  backdrop-filter: blur(12px);
+
+  animation: fadeIn 0.6s ease;
+}
+
+/* Fade animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Cover art */
+.data-display img {
+  width: 200px;
+  border-radius: 10px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.data-display img:hover {
+  transform: scale(1.05);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+/* Loader */
+.loader {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(255,255,255,0.2);
+  border-top-color: white;
+  border-radius: 50%;
+  margin: 40px auto;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Progress bar */
+.progress-bar {
+  width: 60%;
+  height: 6px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 3px;
+  margin: 20px auto;
+  overflow: hidden;
+}
+
+.progress {
+  height: 100%;
+  background: #00ff88;
+  animation: progressAnim 10s linear infinite;
+}
+
+@keyframes progressAnim {
+  from { width: 0%; }
+  to { width: 100%; }
+}
+
+/* Error */
+.error {
+  padding: 12px;
+  border-radius: 10px;
+  margin: 10px auto;
+  width: 60%;
+  backdrop-filter: blur(8px);
+  animation: fadeIn 0.4s ease;
+}
+
+.error.missing { background: rgba(255,165,0,0.3); }
+.error.invalid { background: rgba(255,0,0,0.3); }
+.error.empty   { background: rgba(255,255,0,0.3); }
+.error.generic { background: rgba(200,200,200,0.3); }
+
+.timestamp {
+  margin-top: 10px;
+  opacity: 0.7;
+  font-size: 0.9em;
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>Now playing on Vinylstation <span class="pulse">●</span></h1>
+
+<div id="data-container">
+  <div class="loader"></div>
+</div>
+
+<script>
+let previousData = null;
+
+/* ---------- LUMINANCE ---------- */
+
+function getAverageLuminance(imageUrl) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = 50;
+      canvas.height = 50;
+      const ctx = canvas.getContext('2d');
+
+      ctx.drawImage(img, 0, 0, 50, 50);
+
+      const { data } = ctx.getImageData(0, 0, 50, 50);
+
+      let total = 0;
+      for (let i = 0; i < data.length; i += 4) {
+        total += data[i] * 0.299 + data[i+1] * 0.587 + data[i+2] * 0.114;
+      }
+
+      resolve(total / (data.length / 4));
+    };
+
+    img.onerror = () => resolve(128);
+    img.src = imageUrl;
+  });
+}
+
+async function adaptTextColour(imageUrl) {
+  const raw = await getAverageLuminance(imageUrl);
+  const effective = raw * 0.5 + 50 * 0.5;
+  document.body.style.color = effective < 128 ? '#ffffff' : '#1a1a1a';
+}
+
+/* ---------- UI ---------- */
+
+function setMessage(type, message) {
+  const container = document.getElementById('data-container');
+
+  // Non-destructive: keep previous content
+  const div = document.createElement('div');
+  div.className = `error ${type}`;
+  div.innerHTML = message;
+
+  container.prepend(div);
+}
+
+function updateUI(data) {
+  const container = document.getElementById('data-container');
+
+  const time = new Date().toLocaleTimeString();
+
+  const content = `
+    <div class="data-display">
+      <img src="${.images.coverart}
+      <div>
+        <h2>${data.track.title}</h2>
+        <p><strong>Artist:</strong> ${data.track.subtitle}</p>
+        <p><strong>Album:</strong> ${data.track.sections?.metadata || "N/A"}</p>
+        <p><strong>Genre:</strong> ${data.track.genres?.primary || "N/A"}</p>
+        <div class="timestamp">Updated at ${time}</div>
+      </div>
+    </div>
+
+    <div class="progress-bar">
+      <div class="progress"></div>
+    </div>
+  `;
+
+  container.innerHTML = content;
+}
+
+/* ---------- FETCH ---------- */
+
+async function fetchData() {
+  try {
+    const response = await fetch('song.json');
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        setMessage("missing", "⚠️ song.json not found");
+        return;
+      } else {
+        throw new Error(`HTTP error (${response.status})`);
+      }
+    }
+
+    let data;
+
+    try {
+      data = await response.json();
+    } catch {
+      setMessage("invalid", "⚠️ Invalid JSON format");
+      return;
+    }
+
+    if (
+      !data?.track ||
+      !data.track.title ||
+      !data.track.images?.coverart
+    ) {
+      setMessage("empty", "⚠️ No track data available");
+      return;
+    }
+
+    const bgUrl = data.track.images?.background;
+    if (bgUrl) {
+      document.body.style.backgroundImage = `url('${bgUrl}')`;
+      await adaptTextColour(bgUrl);
+    }
+
+    if (JSON.stringify(data) !== JSON.stringify(previousData)) {
+      updateUI(data);
+      previousData = data;
+    }
+
+  } catch (error) {
+    setMessage("generic", `⚠️ ${error.message}`);
+  }
+}
+
+/* ---------- INIT ---------- */
+
+fetchData();
+setInterval(fetchData, 10000);
+
+</script>
+
+</body>
+</html>
