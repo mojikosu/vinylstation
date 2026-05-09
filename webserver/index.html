@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HTML Preview Gallery</title>
+
+<style>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .toolbar {
+        padding: 10px;
+        background: #222;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    button {
+        padding: 10px 14px;
+        border: none;
+        border-radius: 6px;
+        background: #444;
+        color: white;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+    button:hover {
+        background: #666;
+    }
+
+    iframe {
+        flex: 1;
+        width: 100%;
+        border: none;
+        background: white;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="toolbar">
+    <button onclick="loadPage('index-original.html')">Original</button>
+    <button onclick="loadPage('index-chatgpt.html')">ChatGPT</button>
+    <button onclick="loadPage('index-copilot.html')">Copilot</button>
+    <button onclick="loadPage('index-copilotv2.html')">Copilot V2</button>
+    <button onclick="loadPage('index-gemini.html')">Gemini</button>
+</div>
+
+<iframe id="preview" src="index-original.html"></iframe>
+
+<script>
+function loadPage(file) {
+    document.getElementById('preview').src = file;
+}
+</script>
+
+</body>
+</html>
