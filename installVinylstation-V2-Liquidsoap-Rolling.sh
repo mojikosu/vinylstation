@@ -52,11 +52,11 @@ sudo touch /etc/liquidsoap/vinylfromWax.liq;
 sudo chmod 666 /etc/liquidsoap/vinylfromWax.liq;
 sudo mkdir /var/log/liquidsoap;
 sudo touch /var/log/liquidsoap/VinylfromWax.log;
-sudo chmod 777 /var/log/liquidsoap/VinylfromWax.log;
+sudo chown $USER:$USER /var/log/liquidsoap/VinylfromWax.log;
 sudo touch /lib/systemd/system/liquidsoap.service; 
 sudo touch /var/www/html/song.json
 sudo chown $USER:$USER /var/www/html/song.json
-sudo chmod 777 /var/www/html/song.json
+sudo chmod 755 /var/www/html/song.json
 sudo mkdir /var/www/html/hls
 sudo mkdir /var/www/html/hls/persist
 sudo chown $USER:$USER -R /var/www/html/hls
