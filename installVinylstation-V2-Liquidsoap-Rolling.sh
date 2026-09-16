@@ -368,7 +368,7 @@ current_coverart = ref ("")
 #================ Metadata grab and update section =========================================
 #======== Launch songrec to detect one song, output as JSON, insert metadata into source stream========
 def metadataupdater()
-  json =  process.read("/usr/sbin/songrec recognize --json")
+  raw_json =  process.read("/usr/sbin/songrec recognize --json")
   file.write(data=json, "/var/www/html/song.json")
 let json.parse (parsed_data : {
   track : {
@@ -393,7 +393,7 @@ let json.parse (parsed_data : {
     url : string?,
 
   }
-}) = json
+}) = raw_json
 
 let title = parsed_data.track.title
 let subtitle = parsed_data.track.subtitle
@@ -513,10 +513,10 @@ hls_streams = [
 #		("aac_midfi", aac_midfi), 
 		("aac_hifi", aac_hifi)]
 
-def hls_segment_name(metadata) =
+def hls_segment_name(stream_meta) =
   timestamp = int_of_float(time())
-  let {stream_name, duration, position, extname} = metadata
-  "#{stream_name}_#{duration}_#{timestamp}_#{position}.#{extname}"
+  let {stream_name, duration=seg_duration, position=seg_position, extname} = stream_meta
+  "#{stream_name}_#{seg_duration}_#{timestamp}_#{seg_position}.#{extname}"
 end
 
 
