@@ -66,14 +66,14 @@ sudo -u "${STATION_USER}" -H bash -lc '
 
 mkdir -p "${CARGO_BUILD_DIR}"
 
-echo "Compiling SongRec headless CLI (this can take a while on a Pi 3+)..."
-# Build CLI only: no GUI, no PulseAudio, no PipeWire, no MPRIS.
+echo "Compiling SongRec headless CLI with ALSA support (this can take a while on a Pi 3+)..."
+# Build CLI with ALSA support only: no GUI, no PipeWire, no PulseAudio, no MPRIS.
 # Only ALSA audio input and WAV output are needed for turntable recognition.
 sudo -u "${STATION_USER}" -H bash -lc '
   export PATH="$HOME/.cargo/bin:$PATH"
   export CARGO_BUILD_BUILD_DIR="'"'"${CARGO_BUILD_DIR}"'"'"
   cargo install --git https://github.com/marin-m/SongRec.git \
-    --no-default-features --force songrec
+    --no-default-features --features alsa --force songrec
 '
 
 if [[ ! -x "${STATION_HOME}/.cargo/bin/songrec" ]]; then
