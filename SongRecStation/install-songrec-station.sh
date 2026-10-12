@@ -39,6 +39,9 @@ DATA_DIR="/var/lib/songrec-station"
 ENV_FILE="/etc/songrec-station.env"
 SERVICE_FILE="/etc/systemd/system/songrec-station.service"
 BUILD_SWAPFILE="/var/tmp/songrec-build.swap"
+BUILD_WORK_DIR="/var/lib/songrec-build"
+CARGO_TARGET_DIR="${BUILD_WORK_DIR}/target"
+CARGO_BUILD_DIR="${BUILD_WORK_DIR}/build"
 # Keep a shell-safe default even when this installer is sourced or run with a
 # sparse environment under `set -u`.
 BUILD_SWAP_MIB="${BUILD_SWAP_MIB:-2048}"
@@ -114,6 +117,15 @@ sudo -u "${STATION_USER}" -H bash -lc '
 
 
 echo "Compiling SongRec headless CLI (this can take a while on a Pi 3+)..."
+# cargo install otherwise creates its target directory under /tmp. On many Pi
+# images /tmp is a small tmpfs, so compilation fails long before the SD card is
+# full. Keep both final and intermediate Cargo artifacts on the root filesystem.
+sudo install -d -o "${STATION_USER}" -g "${STATION_USER}" -m 0755 "${BUILD_WORK_DIR}"
+build_free_mib="$(df -Pm "${BUILD_WORK_DIR}" | awk 'NR == 2 { print $4 }')"
+if (( build_free_mib < 4096 )); then
+  echo "Need at least 4096 MiB free in ${BUILD_WORK_DIR} for a SongRec build; found ${build_free_mib} MiB." >&2
+  exit 1
+fi
 # A Pi 3+ has 1 GiB RAM. Two compiler jobs use it better without the four-way
 # rustc memory spike that can make SSH/network services unresponsive.
 # nice/ionice let system services win when they need CPU or I/O.
@@ -121,9 +133,10 @@ echo "Compiling SongRec headless CLI (this can take a while on a Pi 3+)..."
 # The binary will use ALSA by default for audio input and WAV output.
 # The extra audio development packages keep the build compatible with current upstream changes.
 sudo -u "${STATION_USER}" -H env \
-  CARGO_BUILD_JOBS="${BUILD_JOBS}" CARGO_INCREMENTAL=0 bash -lc '
+  CARGO_BUILD_JOBS="${BUILD_JOBS}" CARGO_INCREMENTAL=0 \
+  CARGO_TARGET_DIR="${CARGO_TARGET_DIR}" CARGO_BUILD_BUILD_DIR="${CARGO_BUILD_DIR}" bash -lc '
   export PATH="$HOME/.cargo/bin:$PATH"
-  exec nice -n 19 ionice -c3 cargo install --jobs "$CARGO_BUILD_JOBS" \
+  exec nice -n 19 ionice -c3 cargo install --jobs "$CARGO_BUILD_JOBS" --target-dir "$CARGO_TARGET_DIR" \
     --git https://github.com/marin-m/SongRec.git --no-default-features --force songrec
 '
 
