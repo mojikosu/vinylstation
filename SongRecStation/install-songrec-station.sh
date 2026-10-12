@@ -33,6 +33,7 @@ INSTALL_DIR="/opt/songrec-station"
 DATA_DIR="/var/lib/songrec-station"
 ENV_FILE="/etc/songrec-station.env"
 SERVICE_FILE="/etc/systemd/system/songrec-station.service"
+CARGO_BUILD_DIR="${STATION_HOME}/.cargo/build/songrec"
 
 # Fail early if a required command is missing.
 for cmd in sudo getent id awk cut; do
@@ -63,11 +64,14 @@ sudo -u "${STATION_USER}" -H bash -lc '
   "$HOME/.cargo/bin/rustup" default stable
 '
 
+mkdir -p "${CARGO_BUILD_DIR}"
+
 echo "Compiling SongRec headless CLI (this can take a while on a Pi 3+)..."
 # Build CLI only: no GUI, no PulseAudio, no PipeWire, no MPRIS.
 # Only ALSA audio input and WAV output are needed for turntable recognition.
 sudo -u "${STATION_USER}" -H bash -lc '
   export PATH="$HOME/.cargo/bin:$PATH"
+  export CARGO_BUILD_BUILD_DIR="'"'"${CARGO_BUILD_DIR}"'"'"
   cargo install --git https://github.com/marin-m/SongRec.git \
     --no-default-features --force songrec
 '
