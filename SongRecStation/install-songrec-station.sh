@@ -33,7 +33,11 @@ INSTALL_DIR="/opt/songrec-station"
 DATA_DIR="/var/lib/songrec-station"
 ENV_FILE="/etc/songrec-station.env"
 SERVICE_FILE="/etc/systemd/system/songrec-station.service"
-CARGO_BUILD_DIR="${STATION_HOME}/.cargo/build/songrec"
+BUILD_SWAPFILE="/var/tmp/songrec-build.swap"
+# Keep a shell-safe default even when this installer is sourced or run with a
+# sparse environment under `set -u`.
+BUILD_SWAP_MIB="${BUILD_SWAP_MIB:-2048}"
+BUILD_SWAP_ACTIVE=0
 
 # Fail early if a required command is missing.
 for cmd in sudo getent id awk cut; do
