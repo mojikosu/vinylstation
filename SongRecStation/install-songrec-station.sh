@@ -100,7 +100,7 @@ sudo -u "${STATION_USER}" -H bash -lc '
   "$HOME/.cargo/bin/rustup" default stable
 '
 
-mkdir -p "${CARGO_BUILD_DIR}"
+
 
 echo "Compiling SongRec headless CLI (this can take a while on a Pi 3+)..."
 # Build CLI without GUI: --no-default-features disables adwaita (GUI).
@@ -110,6 +110,7 @@ echo "Compiling SongRec headless CLI (this can take a while on a Pi 3+)..."
 sudo -u "${STATION_USER}" -H bash -lc '
   export PATH="$HOME/.cargo/bin:$PATH"
   export CARGO_BUILD_BUILD_DIR="'"'"${CARGO_BUILD_DIR}"'"'"
+  mkdir -p "${CARGO_BUILD_DIR}"
   cargo install --git https://github.com/marin-m/SongRec.git \
     --no-default-features --force songrec
 '
