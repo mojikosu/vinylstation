@@ -110,8 +110,8 @@ echo "Compiling SongRec headless CLI (this can take a while on a Pi 3+)..."
 # but are not linked into the final binary when features are disabled.
 sudo -u "${STATION_USER}" -H bash -lc '
   export PATH="$HOME/.cargo/bin:$PATH"
-  export CARGO_BUILD_BUILD_DIR="'"'"${CARGO_BUILD_DIR}"'"'"
-  mkdir -p "${CARGO_BUILD_DIR}"
+  # export CARGO_BUILD_BUILD_DIR="'"'"${CARGO_BUILD_DIR}"'"'"
+  # mkdir -p "${CARGO_BUILD_DIR}"
   cargo install --git https://github.com/marin-m/SongRec.git \
     --no-default-features --force songrec
 '
