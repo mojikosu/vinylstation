@@ -53,12 +53,12 @@ sudo env DEBIAN_FRONTEND=noninteractive apt-get update
 sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
   alsa-utils build-essential ca-certificates curl git libasound2-dev \
   libclang-dev libglib2.0-dev libpipewire-0.3-dev libpulse-dev libssl-dev pkg-config python3
-
+ 
 echo "Installing the current stable Rust toolchain for ${STATION_USER}..."
 sudo -u "${STATION_USER}" -H bash -lc '
   export PATH="$HOME/.cargo/bin:$PATH"
   if ! command -v rustup >/dev/null 2>&1; then
-    curl --proto "=https" --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal
+    curl --proto "=https" --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
   fi
   "$HOME/.cargo/bin/rustup" toolchain install stable --profile minimal
   "$HOME/.cargo/bin/rustup" default stable
