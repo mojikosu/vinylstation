@@ -11,12 +11,17 @@
 # The argument is optional; "default" is used when it is omitted.
 set -Eeuo pipefail
 
-if [[ "${EUID}" -eq 0 || -z "${SUDO_USER:-}" ]]; then
+if [[ "${EUID}" -eq 0 ]]; then
   echo "Run this installer as the account that will own the station; it uses sudo when needed." >&2
   exit 1
 fi
 
-STATION_USER="$SUDO_USER"
+STATION_USER="${SUDO_USER:-$(id -un)}"
+if [[ -z "$STATION_USER" ]]; then
+  echo "Cannot determine the user account that should own the station." >&2
+  exit 1
+fi
+
 STATION_HOME="$(getent passwd "$STATION_USER" | cut -d: -f6)"
 if [[ -z "$STATION_HOME" || ! -d "$STATION_HOME" ]]; then
   echo "Cannot determine the home directory for $STATION_USER." >&2
