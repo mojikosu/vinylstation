@@ -52,7 +52,7 @@ echo "Installing build and audio dependencies..."
 sudo env DEBIAN_FRONTEND=noninteractive apt-get update
 sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
   alsa-utils build-essential ca-certificates curl git libasound2-dev \
-  libglib2.0-dev libssl-dev pkg-config python3
+  libglib2.0-dev libpipewire-0.3-dev libpulse-dev libssl-dev pkg-config python3
 
 echo "Installing the current stable Rust toolchain for ${STATION_USER}..."
 sudo -u "${STATION_USER}" -H bash -lc '
@@ -66,9 +66,11 @@ sudo -u "${STATION_USER}" -H bash -lc '
 
 mkdir -p "${CARGO_BUILD_DIR}"
 
-echo "Compiling SongRec headless CLI with ALSA support (this can take a while on a Pi 3+)..."
+echo "Compiling SongRec headless CLI (this can take a while on a Pi 3+)..."
 # Build CLI without GUI: --no-default-features disables adwaita (GUI).
-# The CLI uses ALSA by default for audio input and WAV output.
+# The binary will use ALSA by default for audio input and WAV output.
+# Build deps (libpipewire-0.3-dev, libpulse-dev) are required at compile time
+# but are not linked into the final binary when features are disabled.
 sudo -u "${STATION_USER}" -H bash -lc '
   export PATH="$HOME/.cargo/bin:$PATH"
   export CARGO_BUILD_BUILD_DIR="'"'"${CARGO_BUILD_DIR}"'"'"
