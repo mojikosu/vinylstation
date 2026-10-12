@@ -29,6 +29,11 @@ if [[ -z "${STATION_HOME}" || ! -d "${STATION_HOME}" ]]; then
 fi
 
 AUDIO_DEVICE="${1:-default}"
+# Accept the easy-to-type but invalid ALSA shorthand "hw1:0" and normalize it
+# to the actual ALSA device notation, "hw:1,0".
+if [[ "${AUDIO_DEVICE}" =~ ^hw([0-9]+):([0-9]+)$ ]]; then
+  AUDIO_DEVICE="hw:${BASH_REMATCH[1]},${BASH_REMATCH[2]}"
+fi
 INSTALL_DIR="/opt/songrec-station"
 DATA_DIR="/var/lib/songrec-station"
 ENV_FILE="/etc/songrec-station.env"
@@ -37,9 +42,11 @@ BUILD_SWAPFILE="/var/tmp/songrec-build.swap"
 # Keep a shell-safe default even when this installer is sourced or run with a
 # sparse environment under `set -u`.
 BUILD_SWAP_MIB="${BUILD_SWAP_MIB:-2048}"
+# Two Rust compiler processes are a reasonable compromise for the Pi 3+'s
+# four CPU cores and 1 GiB RAM. Override before launch only if needed, e.g.
+# BUILD_JOBS=1 ./install-songrec-station.sh "hw:1,0"
+BUILD_JOBS="${BUILD_JOBS:-2}"
 BUILD_SWAP_ACTIVE=0
-CARGO_BUILD_BUILD_DIR="${HOME}/.cargo/build/songrec"
-CARGO_BUILD_DIR="${HOME}/.cargo/build/songrec"
 
 # Fail early if a required command is missing.
 for cmd in sudo getent id awk cut; do
@@ -48,6 +55,11 @@ for cmd in sudo getent id awk cut; do
     exit 1
   fi
 done
+
+if ! [[ "${BUILD_JOBS}" =~ ^[1-4]$ ]]; then
+  echo "BUILD_JOBS must be a whole number from 1 through 4; got: ${BUILD_JOBS}" >&2
+  exit 1
+fi
 
 # Ask for sudo upfront so the rest of the script is not interrupted partway through.
 if ! sudo -n true 2>/dev/null; then
@@ -87,9 +99,8 @@ trap cleanup_build_swap EXIT
 echo "Installing build and audio dependencies..."
 sudo env DEBIAN_FRONTEND=noninteractive apt-get update
 sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-  alsa-utils build-essential ca-certificates curl git libasound2-dev libgtk-4-dev \
-  libclang-dev libglib2.0-dev libpipewire-0.3-dev libpulse-dev libssl-dev libsoup-3.0-dev \
-  libadwaita-1-dev libdbus-1-dev intltool pkg-config python3
+  alsa-utils build-essential ca-certificates curl git libasound2-dev \
+  libclang-dev libglib2.0-dev libpipewire-0.3-dev libpulse-dev libssl-dev pkg-config python3
  
 echo "Installing the current stable Rust toolchain for ${STATION_USER}..."
 sudo -u "${STATION_USER}" -H bash -lc '
@@ -102,18 +113,18 @@ sudo -u "${STATION_USER}" -H bash -lc '
 '
 
 
-
 echo "Compiling SongRec headless CLI (this can take a while on a Pi 3+)..."
+# A Pi 3+ has 1 GiB RAM. Two compiler jobs use it better without the four-way
+# rustc memory spike that can make SSH/network services unresponsive.
+# nice/ionice let system services win when they need CPU or I/O.
 # Build CLI without GUI: --no-default-features disables adwaita (GUI).
 # The binary will use ALSA by default for audio input and WAV output.
-# Build deps (libpipewire-0.3-dev, libpulse-dev, libclang-dev) are required at compile time
-# but are not linked into the final binary when features are disabled.
-sudo -u "${STATION_USER}" -H bash -lc '
+# The extra audio development packages keep the build compatible with current upstream changes.
+sudo -u "${STATION_USER}" -H env \
+  CARGO_BUILD_JOBS="${BUILD_JOBS}" CARGO_INCREMENTAL=0 bash -lc '
   export PATH="$HOME/.cargo/bin:$PATH"
-  # export CARGO_BUILD_BUILD_DIR="'"'"${CARGO_BUILD_DIR}"'"'"
-  # mkdir -p "${CARGO_BUILD_DIR}"
-  cargo install --git https://github.com/marin-m/SongRec.git \
-    --no-default-features --force songrec
+  exec nice -n 19 ionice -c3 cargo install --jobs "$CARGO_BUILD_JOBS" \
+    --git https://github.com/marin-m/SongRec.git --no-default-features --force songrec
 '
 
 if [[ ! -x "${STATION_HOME}/.cargo/bin/songrec" ]]; then
@@ -128,14 +139,12 @@ sudo install -o "${STATION_USER}" -g "${STATION_USER}" -m 0755 \
 echo "Installing the station worker..."
 sudo tee "${INSTALL_DIR}/songrec_station.py" >/dev/null <<'PYTHON'
 #!/usr/bin/env python3
-"""Capture one fingerprint sample per vinyl track and publish web-friendly JSON."""
+"""Gate SongRec's one-shot microphone recognition and publish JSON."""
 import json
 import os
 import shutil
 import signal
 import subprocess
-import sys
-import wave
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -163,7 +172,6 @@ SILENCE_RMS = int(CONFIG.get("SILENCE_RMS", "350"))
 CHUNK_SECONDS = float(CONFIG.get("CHUNK_SECONDS", "0.25"))
 START_AUDIO_SECONDS = float(CONFIG.get("START_AUDIO_SECONDS", "3"))
 END_SILENCE_SECONDS = float(CONFIG.get("END_SILENCE_SECONDS", "4"))
-CAPTURE_SECONDS = float(CONFIG.get("CAPTURE_SECONDS", "18"))
 SONGREC_TIMEOUT_SECONDS = int(CONFIG.get("SONGREC_TIMEOUT_SECONDS", "90"))
 DATA_DIR = Path(CONFIG.get("DATA_DIR", "/var/lib/songrec-station"))
 SONGREC = CONFIG.get("SONGREC_BIN", "/opt/songrec-station/songrec")
@@ -198,29 +206,17 @@ def append_history(payload):
         output.write(json.dumps(payload, ensure_ascii=False) + "\n")
 
 
-def write_wav(raw, started_at):
-    filename = "sample-" + started_at.replace(":", "-") + ".wav"
-    path = DATA_DIR / filename
-    with wave.open(str(path), "wb") as wav:
-        wav.setnchannels(CHANNELS)
-        wav.setsampwidth(2)
-        wav.setframerate(RATE)
-        wav.writeframes(raw)
-    return path
-
-
-def identify(raw, started_at):
-    sample_path = write_wav(raw, started_at)
+def identify(started_at):
+    """Run one direct SongRec microphone recognition against the USB device."""
     publish({
         "state": "identifying",
         "sample_started_at": started_at,
-        "sample_path": str(sample_path),
         "message": "Identifying this track...",
     })
 
     try:
         result = subprocess.run(
-            [SONGREC, "recognize", "--json", str(sample_path)],
+            [SONGREC, "recognize", "--audio-device", DEVICE, "--json"],
             capture_output=True,
             text=True,
             timeout=SONGREC_TIMEOUT_SECONDS,
@@ -230,7 +226,6 @@ def identify(raw, started_at):
         return {
             "state": "not_found",
             "sample_started_at": started_at,
-            "sample_path": str(sample_path),
             "error": "SongRec timed out.",
         }
 
@@ -239,7 +234,6 @@ def identify(raw, started_at):
         return {
             "state": "not_found",
             "sample_started_at": started_at,
-            "sample_path": str(sample_path),
             "error": result.stderr.strip() or "SongRec failed.",
         }
 
@@ -249,7 +243,6 @@ def identify(raw, started_at):
         return {
             "state": "not_found",
             "sample_started_at": started_at,
-            "sample_path": str(sample_path),
             "error": "No recognized song.",
             "songrec_stdout": stdout,
         }
@@ -257,7 +250,6 @@ def identify(raw, started_at):
     return {
         "state": "identified",
         "sample_started_at": started_at,
-        "sample_path": str(sample_path),
         "songrec": songrec_response,
     }
 
@@ -284,7 +276,10 @@ def main():
         "-t",
         "raw",
     ]
-    recorder = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=0)
+    def start_recorder():
+        return subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=0)
+
+    recorder = start_recorder()
 
     def stop(*_):
         recorder.terminate()
@@ -295,10 +290,7 @@ def main():
 
     active_for = 0.0
     silent_for = 0.0
-    capturing = False
     waiting_for_gap = False
-    capture = bytearray()
-    sample_started_at = None
 
     while True:
         data = recorder.stdout.read(FRAME_BYTES)
@@ -318,27 +310,24 @@ def main():
                 publish({"state": "waiting_for_audio", "message": "Waiting for the next record..."})
             continue
 
-        if not capturing:
-            active_for = active_for + duration if is_audio else 0.0
-            if active_for >= START_AUDIO_SECONDS:
-                capturing = True
-                capture = bytearray(data)
-                sample_started_at = now()
-                publish({
-                    "state": "capturing",
-                    "sample_started_at": sample_started_at,
-                    "message": "Capturing one sample for identification...",
-                })
-            continue
-
-        capture.extend(data)
-        if len(capture) >= int(CAPTURE_SECONDS * RATE * CHANNELS * 2):
-            outcome = identify(bytes(capture), sample_started_at)
+        active_for = active_for + duration if is_audio else 0.0
+        if active_for >= START_AUDIO_SECONDS:
+            started_at = now()
+            # arecord owns the ALSA device while detecting silence. Release it
+            # before SongRec opens that same device for its one-shot capture.
+            recorder.terminate()
+            try:
+                recorder.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                recorder.kill()
+                recorder.wait()
+            outcome = identify(started_at)
             publish(outcome)
             append_history(outcome)
-            capturing = False
             waiting_for_gap = True
             silent_for = 0.0
+            active_for = 0.0
+            recorder = start_recorder()
 
 
 if __name__ == "__main__":
@@ -363,7 +352,6 @@ CHANNELS=1
 SILENCE_RMS=350
 START_AUDIO_SECONDS=3
 END_SILENCE_SECONDS=4
-CAPTURE_SECONDS=18
 SONGREC_TIMEOUT_SECONDS=90
 DATA_DIR=${DATA_DIR}
 SONGREC_BIN=${INSTALL_DIR}/songrec
