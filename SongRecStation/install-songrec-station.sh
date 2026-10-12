@@ -54,14 +54,14 @@ fi
 existing_swap_kib="$(awk 'NR > 1 { total += $3 } END { print total + 0 }' /proc/swaps)"
 if (( existing_swap_kib < 1572864 )); then
   available_mib="$(df -Pm /var/tmp | awk 'NR == 2 { print $4 }')"
-  if (( available_mib < BUILD_SWAP_MIB + 512 )); then
-    echo "Need at least $((BUILD_SWAP_MIB + 512)) MiB free in /var/tmp for the temporary build swap file; found ${available_mib} MiB." >&2
+  if (( available_mib < ${BUILD_SWAP_MIB:-2048} + 512 )); then
+    echo "Need at least $(( ${BUILD_SWAP_MIB:-2048} + 512 )) MiB free in /var/tmp for the temporary build swap file; found ${available_mib} MiB." >&2
     exit 1
   fi
-  echo "Enabling a temporary ${BUILD_SWAP_MIB} MiB swap file for the SongRec build..."
+  echo "Enabling a temporary ${BUILD_SWAP_MIB:-2048} MiB swap file for the SongRec build..."
   sudo rm -f "${BUILD_SWAPFILE}"
-  if ! sudo fallocate -l "${BUILD_SWAP_MIB}M" "${BUILD_SWAPFILE}"; then
-    sudo dd if=/dev/zero of="${BUILD_SWAPFILE}" bs=1M count="${BUILD_SWAP_MIB}" status=progress
+  if ! sudo fallocate -l "${BUILD_SWAP_MIB:-2048}M" "${BUILD_SWAPFILE}"; then
+    sudo dd if=/dev/zero of="${BUILD_SWAPFILE}" bs=1M count="${BUILD_SWAP_MIB:-2048}" status=progress
   fi
   sudo chmod 600 "${BUILD_SWAPFILE}"
   sudo mkswap "${BUILD_SWAPFILE}" >/dev/null
