@@ -63,11 +63,12 @@ sudo -u "${STATION_USER}" -H bash -lc '
   "$HOME/.cargo/bin/rustup" default stable
 '
 
-echo "Compiling SongRec (this can take a while on a Pi 3+)..."
-# No GUI, PipeWire, PulseAudio, MPRIS, or FFmpeg features are required: ALSA and WAV are enough.
+echo "Compiling SongRec headless CLI (this can take a while on a Pi 3+)..."
+# Build CLI only: no GUI, no PulseAudio, no PipeWire, no MPRIS.
+# Only ALSA audio input and WAV output are needed for turntable recognition.
 sudo -u "${STATION_USER}" -H bash -lc '
   export PATH="$HOME/.cargo/bin:$PATH"
-  cargo install --git https://github.com/marin-m/SongRec.git --locked \
+  cargo install --git https://github.com/marin-m/SongRec.git \
     --no-default-features --force songrec
 '
 
