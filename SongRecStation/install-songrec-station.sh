@@ -48,6 +48,36 @@ if ! sudo -n true 2>/dev/null; then
   sudo true
 fi
 
+# Compiling Rust crates on a 1 GiB Pi 3+ can otherwise be killed by the OOM
+# manager.  This is deliberately temporary: a persistent large swap file adds
+# SD-card writes while the station is only capturing and identifying music.
+existing_swap_kib="$(awk 'NR > 1 { total += $3 } END { print total + 0 }' /proc/swaps)"
+if (( existing_swap_kib < 1572864 )); then
+  available_mib="$(df -Pm /var/tmp | awk 'NR == 2 { print $4 }')"
+  if (( available_mib < BUILD_SWAP_MIB + 512 )); then
+    echo "Need at least $((BUILD_SWAP_MIB + 512)) MiB free in /var/tmp for the temporary build swap file; found ${available_mib} MiB." >&2
+    exit 1
+  fi
+  echo "Enabling a temporary ${BUILD_SWAP_MIB} MiB swap file for the SongRec build..."
+  sudo rm -f "${BUILD_SWAPFILE}"
+  if ! sudo fallocate -l "${BUILD_SWAP_MIB}M" "${BUILD_SWAPFILE}"; then
+    sudo dd if=/dev/zero of="${BUILD_SWAPFILE}" bs=1M count="${BUILD_SWAP_MIB}" status=progress
+  fi
+  sudo chmod 600 "${BUILD_SWAPFILE}"
+  sudo mkswap "${BUILD_SWAPFILE}" >/dev/null
+  sudo swapon "${BUILD_SWAPFILE}"
+  BUILD_SWAP_ACTIVE=1
+fi
+
+cleanup_build_swap() {
+  if (( BUILD_SWAP_ACTIVE )); then
+    echo "Removing temporary build swap file..."
+    sudo swapoff "${BUILD_SWAPFILE}" || true
+    sudo rm -f "${BUILD_SWAPFILE}"
+  fi
+}
+trap cleanup_build_swap EXIT
+
 echo "Installing build and audio dependencies..."
 sudo env DEBIAN_FRONTEND=noninteractive apt-get update
 sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
