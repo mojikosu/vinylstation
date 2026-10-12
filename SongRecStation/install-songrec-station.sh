@@ -39,6 +39,7 @@ BUILD_SWAPFILE="/var/tmp/songrec-build.swap"
 BUILD_SWAP_MIB="${BUILD_SWAP_MIB:-2048}"
 BUILD_SWAP_ACTIVE=0
 CARGO_BUILD_BUILD_DIR="${HOME}/.cargo/build/songrec"
+CARGO_BUILD_DIR="${HOME}/.cargo/build/songrec"
 
 # Fail early if a required command is missing.
 for cmd in sudo getent id awk cut; do
