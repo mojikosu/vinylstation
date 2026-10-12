@@ -52,7 +52,7 @@ echo "Installing build and audio dependencies..."
 sudo env DEBIAN_FRONTEND=noninteractive apt-get update
 sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
   alsa-utils build-essential ca-certificates curl git libasound2-dev \
-  libssl-dev pkg-config python3
+  libglib2.0-dev libssl-dev pkg-config python3
 
 echo "Installing the current stable Rust toolchain for ${STATION_USER}..."
 sudo -u "${STATION_USER}" -H bash -lc '
